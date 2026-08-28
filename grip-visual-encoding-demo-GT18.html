@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZWBIM 夹点定义 GT-01~18 · 交互演示</title>
+<style>
+  :root{
+    /* ZW 品牌色体系：蓝 + 橙 + 黑/白/灰 */
+    --blue:#2563EB;        /* 几何编辑类 */
+    --blue-deep:#1D4ED8;   /* 激活态 */
+    --blue-soft:#EAF1FE;   /* 选中背景 */
+    --orange:#F5801F;      /* 操纵/参数类 */
+    --orange-soft:#FEF1E6; /* 选中背景 */
+    --gray:#6B7280;        /* 关系/曲线/批量类（中性） */
+    --gray-soft:#EEF0F3;
+
+    --ink:#1B2530;         /* 主文字（近黑） */
+    --outline:#1B2530;     /* 悬停/激活高亮描边（近黑，白底视口下清晰、克制） */
+    --sub:#69727D;         /* 次级文字（灰） */
+    --line:#E4E7EC;        /* 描边/分割线 */
+    --bg:#F4F5F7;          /* 页面底 */
+    --card:#FFFFFF;        /* 卡片底 */
+    --canvas-bg:#FBFCFD;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:16px}
+
+  header{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:16px 20px;margin-bottom:14px}
+  header h1{font-size:19px;font-weight:700;letter-spacing:.4px;color:var(--ink);display:flex;align-items:center;gap:10px}
+  header h1 .chip{font-size:11px;font-weight:600;color:#fff;background:var(--orange);padding:2px 8px;border-radius:10px;letter-spacing:0}
+  header p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.7}
+  header p b{color:var(--blue)}
+
+  /* ---------- 视觉样式规范映射（源表 → GT） ---------- */
+  .mapcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+  .mapcard .t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  .mapcard .t small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12px}
+  .mapcard table{width:100%;border-collapse:collapse;font-size:12px}
+  .mapcard th,.mapcard td{border:1px solid var(--line);padding:5px 8px;text-align:left;color:var(--sub);line-height:1.5}
+  .mapcard th{background:var(--gray-soft);color:var(--ink);font-weight:600}
+  .mapcard td.gt{color:var(--blue);font-weight:600;white-space:nowrap}
+
+  /* ---------- 图例速查 ---------- */
+  .legend{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+  .legend .t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  .legend .t small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12px}
+  .legend-grid{display:flex;flex-wrap:wrap;gap:8px}
+  .lg{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;transition:.15s;color:var(--ink)}
+  .lg:hover{border-color:var(--blue)}
+  .lg.active{background:var(--blue-soft);border-color:var(--blue)}
+  .lg .dot{width:16px;height:16px;flex:none}
+
+  /* ---------- 状态演示条 ---------- */
+  .statebar{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+  .statebar .t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  .statebar .t small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12px}
+  .states{display:flex;gap:14px;flex-wrap:wrap}
+  .st{flex:1;min-width:130px;background:var(--gray-soft);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center}
+  .st .lbl{font-size:12px;color:var(--sub);margin-top:6px;font-weight:600}
+  .st .desc{font-size:11px;color:var(--sub);margin-top:2px;line-height:1.4}
+  .st svg{display:block;margin:0 auto}
+
+  /* ---------- 主体 ---------- */
+  .main{display:flex;gap:14px;align-items:flex-start}
+  nav{width:218px;flex:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:600px;overflow:auto}
+  nav .nav-t{font-size:12px;color:var(--sub);padding:6px 10px 4px;font-weight:700;position:sticky;top:0;background:var(--card)}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;transition:.12s;border:1px solid transparent;color:var(--ink)}
+  .nav-item:hover{background:var(--gray-soft)}
+  .nav-item.active{background:var(--blue-soft);border-color:#C7D8FB;font-weight:600;color:var(--blue)}
+  .nav-item .no{font-size:11px;color:var(--sub);width:26px;flex:none;text-align:right}
+  .nav-item .dot{width:12px;height:12px;flex:none;border-radius:3px}
+
+  .stage{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stage-head{padding:14px 18px 0}
+  .stage-title{font-size:17px;font-weight:700;color:var(--ink)}
+  .stage-title .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:2px;color:#fff}
+  .stage-title .xp{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:2px;background:var(--gray-soft);color:var(--sub)}
+  .stage-desc{font-size:13px;color:var(--sub);margin-top:5px;line-height:1.6}
+  .canvas-wrap{position:relative;margin:12px 16px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .canvas-wrap svg{display:block;width:100%;height:auto;background:var(--canvas-bg);cursor:default;user-select:none}
+  .feedback{position:absolute;top:10px;right:12px;background:var(--ink);color:#fff;font-size:12px;padding:6px 12px;border-radius:6px;pointer-events:none;min-width:120px;text-align:center;font-family:Consolas,monospace;letter-spacing:.3px}
+  .feedback b{font-size:13px;color:#fff}
+  .stage-hint{padding:0 18px 14px;font-size:12px;color:var(--sub);line-height:1.7}
+  .stage-hint b{color:var(--blue)}
+  .stage-meta{padding:0 18px 14px;font-size:11.5px;color:var(--sub);line-height:1.8}
+  .stage-meta b{color:var(--ink)}
+
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:16px 0 8px;line-height:1.8}
+
+  /* ---------- SVG 夹点样式（与视觉编码规范一致） ---------- */
+  #scene > *:not(.grip):not(.clickable){ pointer-events:none; }
+  .grip{cursor:grab;pointer-events:all}
+  .grip:active{cursor:grabbing}
+  .grip > :first-child{ opacity:.6; transition: transform .08s ease, fill .08s ease, stroke-width .08s ease, opacity .08s ease, stroke .08s ease; transform-box: fill-box; transform-origin: center; }
+  .grip:hover > :first-child,
+  .grip.grip-active > :first-child{ transform: scale(1.3); fill: var(--gc); opacity:1; stroke: var(--outline); stroke-width: 2.6; }
+  .grip.grip-active > :first-child{ transform: scale(1.4); }
+  .grip-locked{cursor:not-allowed;opacity:.45}
+  .grip-locked > :first-child{ stroke-width:3; opacity:.6; }
+  .grip-disabled{cursor:default;opacity:.25;display:none}
+  .grip text{font-size:10px;font-family:Consolas,monospace}
+  .clickable{cursor:pointer;pointer-events:all}
+  .clickable > g{ opacity:.6; transition: transform .1s ease, opacity .1s ease; transform-box: fill-box; transform-origin: center; }
+  .clickable:hover > g{ transform: scale(1.25); opacity:1; }
+  .clickable:hover > g > *{ stroke-width: 3.4; }
+
+  /* ---------- 配色逻辑说明 ---------- */
+  .colorlogic{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+  .colorlogic .t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
+  .colorlogic .t small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12px}
+  .cl-grid{display:flex;gap:12px;flex-wrap:wrap}
+  .cl{flex:1;min-width:240px;display:flex;gap:10px;align-items:flex-start;background:var(--gray-soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--sub);line-height:1.6}
+  .cl b{color:var(--ink)}
+  .cl-dot{width:14px;height:14px;border-radius:4px;flex:none;margin-top:3px}
+  .cl-note{font-size:11.5px;color:var(--sub);margin-top:10px;line-height:1.7;border-top:1px dashed var(--line);padding-top:8px}
+
+  @media (max-width:900px){ .main{flex-direction:column} nav{width:100%;max-height:none} .nav-item{display:inline-flex;width:48%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>ZWBIM 夹点定义 · GT-01~18 全量交互演示 <span class="chip">v3.0</span></h1>
+    <p>基于《ZWBIM夹点分析_最终方案汇总V6》Sheet4「夹点定义」18 个类型逐一配置，沿用既有<b>视觉编码规范</b>：<b>蓝=几何编辑</b>、<b>橙=操纵/参数</b>、<b>灰=关系/曲线/批量</b>，形状区分具体类型；5 种显示状态（普通/悬停/激活/锁定/禁用）。左侧选择类型，右侧画布<b>直接拖拽/点击体验</b>。</p>
+  </header>
+
+  <!-- 视觉样式规范映射：源表 11 类典型位置 → GT -->
+  <div class="mapcard">
+    <div class="t">视觉样式规范映射（既有 11 类典型位置 → 18 个 GT）<small>状态规则统一：普通=原色；悬停=高亮放大；激活=实心加大；锁定=灰色；禁用=隐藏（跨文件链接对象=锁定态）</small></div>
+    <table>
+      <thead><tr><th style="width:36%">典型出现位置（视觉样式规范源表）</th><th>对应 GT</th><th>夹点名称</th></tr></thead>
+      <tbody id="mapBody"></tbody>
+    </table>
+  </div>
+
+  <!-- 图例速查 -->
+  <div class="legend">
+    <div class="t">夹点类型速查（点击可跳转场景）<small>颜色=类别，形状=具体类型</small></div>
+    <div class="legend-grid" id="legendGrid"></div>
+  </div>
+
+  <!-- 配色逻辑说明 -->
+  <div class="colorlogic">
+    <div class="t">配色逻辑：颜色 = 夹点逻辑类别<small>与 V6 方案表 GT 归类一致</small></div>
+    <div class="cl-grid">
+      <div class="cl"><span class="cl-dot" style="background:var(--blue)"></span><div><b>蓝 · 几何编辑类</b><br>GT-01 端点 / GT-02 中点 / GT-03 圆心 / GT-04 象限 / GT-06 顶点控制 / GT-07 轮廓范围 / GT-09 截面 / GT-14 标注定义点——直接改对象自身的几何（位置·尺寸·形状）。</div></div>
+      <div class="cl"><span class="cl-dot" style="background:var(--orange)"></span><div><b>橙 · 操纵 / 参数类</b><br>GT-05 插入点 / GT-11 参数 / GT-12 方向翻转 / GT-13 文字位置 / GT-15 临时尺寸——改实例属性、朝向或定位基准（操纵柄），不改几何形状。</div></div>
+      <div class="cl"><span class="cl-dot" style="background:var(--gray)"></span><div><b>灰 · 关系 / 曲线 / 批量 / 范围类</b><br>GT-08 路径 / GT-10 连接点 / GT-16 裁剪剖切 / GT-17 阵列间距 / GT-18 子对象无夹点——改连接关系、曲线形态、显示范围与批量副本。</div></div>
+    </div>
+    <div class="cl-note">中望品牌色：主色蓝 #2563EB、强调橙 #F5801F、中性灰 #6B7280。颜色只表「类别」，具体类型靠<b>形状</b>区分；悬停时空心夹点由空心变实心并放大（Revit 式高亮）。锁定态=跨文件链接对象（灰、不可编辑）；禁用态=无编辑权限（隐藏/虚化）。</div>
+  </div>
+
+  <!-- 5 种显示状态 -->
+  <div class="statebar">
+    <div class="t">5 种显示状态<small>鼠标移上去看「悬停 / 激活」效果；「锁定」「禁用」为静态示例</small></div>
+    <div class="states" id="stateBar"></div>
+  </div>
+
+  <!-- 主体 -->
+  <div class="main">
+    <nav id="nav"></nav>
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-title" id="stageTitle"></div>
+        <div class="stage-desc" id="stageDesc"></div>
+      </div>
+      <div class="canvas-wrap">
+        <svg id="canvas" viewBox="0 0 820 460" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ECEEF2" stroke-width="1"/>
+            </pattern>
+            <clipPath id="cropClip"><rect id="cropRectShape" x="0" y="0" width="820" height="460"/></clipPath>
+          </defs>
+          <rect x="0" y="0" width="820" height="460" fill="url(#grid)"/>
+          <g id="scene"></g>
+        </svg>
+        <div class="feedback" id="feedback">就绪</div>
+      </div>
+      <div class="stage-hint" id="stageHint"></div>
+      <div class="stage-meta" id="stageMeta"></div>
+    </div>
+  </div>
+
+  <footer>ZWBIM 夹点设计 · 平台通用能力演示版 v3.0　|　依据《最终方案汇总V6》Sheet4 夹点定义 GT-01~18　|　视觉编码遵循《夹点类型视觉编码》规范 · 中望蓝橙配色</footer>
+</div>
+
+<script>
+/* =========================================================
+ * 配置：18 类 GT 夹点（与 V6 方案表 Sheet4 夹点定义一致）
+ * 配色：blue=几何编辑 / orange=操纵参数 / gray=关系曲线批量
+ * ========================================================= */
+const C = { blue:'#2563EB', blueDeep:'#1D4ED8', orange:'#F5801F', gray:'#6B7280' };
+
+const TYPES = [
+  { id:'gt01', no:'GT-01', name:'端点/角点', shape:'实心方块', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-02 端点拉伸',
+    title:'端点/角点 · 实心方块（蓝）',
+    desc:'对象端部的夹点（线段/多段线/墙/梁/管段两端、矩形四角）。抓住端点拖动，长度/方向/轮廓随之改变，相邻连接自动保持（墙连接自动更新）。',
+    hint:'<b>操作：</b>拖动两个端点中任意一个，线的长度与方向实时变化；悬停放大高亮。' },
+  { id:'gt02', no:'GT-02', name:'中点/弧中点', shape:'空心方块', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-02（中点变体）',
+    title:'中点/弧中点 · 空心方块（蓝）',
+    desc:'对象中点的夹点（直线/多段线线段中点、圆弧/椭圆弧中点）。空心方块=移动专用：拖中点整体平移，长度方向不变（部分对象可拉伸）。',
+    hint:'<b>操作：</b>拖动中点夹点，整条线整体平移；Shift 多选中点=整体移动。' },
+  { id:'gt03', no:'GT-03', name:'圆心/中心', shape:'圆形', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-03 圆心移动',
+    title:'圆心/中心 · 圆形（蓝）',
+    desc:'圆心/中心点夹点（圆/椭圆/圆弧圆心、部分块的几何中心）。拖=整体平移，几何形状不变；也是旋转基准点。',
+    hint:'<b>操作：</b>拖动蓝色圆形夹点，圆整体平移（位置移动）；中心点即旋转基准。' },
+  { id:'gt04', no:'GT-04', name:'象限', shape:'菱形', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-03 象限拉伸',
+    title:'象限 · 菱形（蓝）',
+    desc:'圆/椭圆圆周 0/90/180/270° 的 4 个象限点夹点。拖象限=拉伸改半径/半轴，圆心保持不动。',
+    hint:'<b>操作：</b>拖动圆上 4 个菱形象限点任意一个，半径实时改变；圆心不动。' },
+  { id:'gt05', no:'GT-05', name:'插入点/基点', shape:'实心菱形', color:C.orange, colorName:'橙', cat:'操纵/参数', xp:'XP-01 插入点移动',
+    title:'插入点/基点 · 实心菱形（橙）',
+    desc:'块参照/外部参照/属性定义/族实例的插入点或定位点。拖=整体平移，几何不变；块参照 GRIPBLOCK=0 时仅显示这一个夹点。',
+    hint:'<b>操作：</b>拖动橙色实心菱形（插入点），家具块整体移动；文字/块/标注的插入点位置受对正方式 JUSTIFY 影响（GR-12）。' },
+  { id:'gt06', no:'GT-06', name:'顶点/控制点', shape:'小菱形', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-04 控制点轮廓',
+    title:'顶点/控制点 · 小菱形（蓝）',
+    desc:'多段线顶点、样条控制点/拟合点、网格顶点的夹点。拖=改变形状；可输入 A 追加顶点、可删除。',
+    hint:'<b>操作：</b>拖动 4 个控制点，样条曲线实时重绘（控制多边形为虚线）；夹点数量随几何变化（GR-04）。' },
+  { id:'gt07', no:'GT-07', name:'轮廓/范围/边界', shape:'三角', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-04 轮廓范围',
+    title:'轮廓/范围/边界 · 三角（蓝）',
+    desc:'楼板/屋顶/墙体轮廓、房间/空间边界、裁剪范围的控制点。拖=改变形状/范围，轮廓随构件联动；可进入草图编辑。',
+    hint:'<b>操作：</b>拖动五边形任意顶点，轮廓自由变形；轮廓随构件联动（GR-08），尺寸参数在属性面板（GR-13）。' },
+  { id:'gt08', no:'GT-08', name:'路径', shape:'小菱形', color:C.gray, colorName:'灰', cat:'关系/曲线/批量', xp:'XP-02/XP-04 路径',
+    title:'路径 · 小菱形（灰）',
+    desc:'栏杆/坡道/导线/导体路径上的控制点。拖=改变路径长度/走向；沿路径的对象（栏杆立柱等）随路径自动更新。',
+    hint:'<b>操作：</b>拖动路径上的灰色控制点，折线路径实时改变，路径上的立柱跟随分布。' },
+  { id:'gt09', no:'GT-09', name:'截面', shape:'三角', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-04 截面',
+    title:'截面 · 三角（蓝）',
+    desc:'结构构件截面（型钢/梁截面）的轮廓控制点。拖=改变截面形状/尺寸；截面修改联动构件几何（GR-04/GR-08）。',
+    hint:'<b>操作：</b>拖动截面上方/右侧三角夹点，分别改截面高 H 与宽 W，数值实时显示。' },
+  { id:'gt10', no:'GT-10', name:'连接点', shape:'圆环', color:C.gray, colorName:'灰', cat:'关系/曲线/批量', xp:'XP-05 连接点参数化',
+    title:'连接点 · 圆环（灰）',
+    desc:'管件/风管/桥架/设备接口处的连接点。拖=对齐相邻管件并联动（变径口改管径自动更新相接管段）；连接关系按规则重算。',
+    hint:'<b>操作：</b>左右拖动灰色圆环，风管段沿风口方向移动但始终保持连接；拖出容许范围提示断开（GR-11 连接点联动）。' },
+  { id:'gt11', no:'GT-11', name:'参数', shape:'箭头(带数值)', color:C.orange, colorName:'橙', cat:'操纵/参数', xp:'XP-05 参数化',
+    title:'参数 · 箭头(带数值)（橙）',
+    desc:'管径/坡度/宽度/厚度等参数化控制夹点。拖=改截面尺寸/坡度/标高（改参数，非纯几何拉伸）；参数也可在属性面板修改（GR-13）。',
+    hint:'<b>操作：</b>上下拖动橙色数值箭头，管径 Ø 实时变化，管道矩形宽度跟随；数值标签随箭头移动。' },
+  { id:'gt12', no:'GT-12', name:'方向/旋转/翻转', shape:'双向箭头', color:C.orange, colorName:'橙', cat:'操纵/参数', xp:'XP-01 方向变体',
+    title:'方向/旋转/翻转 · 双向箭头（橙）',
+    desc:'方向箭头/旋转把手/翻转三角。风口方向、门/窗翻转、构造线角度——旋转/翻转改变朝向或镜像。',
+    hint:'<b>操作：</b>单击双向箭头，门朝向在内开/外开之间切换；翻转后门扇与门框关系自动保持。' },
+  { id:'gt13', no:'GT-13', name:'文字位置', shape:'方块+文字', color:C.orange, colorName:'橙', cat:'操纵/参数', xp:'XP-06 标注文字',
+    title:'文字位置 · 方块+文字（橙）',
+    desc:'标注文字/轴号/标高符号的位置夹点。拖=移动文字/标签位置；文字拖出标注可断开关联（GR-05 DIM 关联性）。',
+    hint:'<b>操作：</b>拖动橙色文字夹点移动标注文字；拖离标注较远时关联断开（文字变灰、连接线消失）。' },
+  { id:'gt14', no:'GT-14', name:'标注定义点', shape:'空心方块', color:C.blue, colorName:'蓝', cat:'几何编辑', xp:'XP-06 标注定义点',
+    title:'标注定义点 · 空心方块（蓝）',
+    desc:'标注两端定义点（测量点）。拖=改变标注测量值，标注值随图元自动更新（遵循 DIM 关联性 GR-05）。',
+    hint:'<b>操作：</b>拖动线段两端的定义点，线段长度与标注值同步变化（通用标注 5 模式）。' },
+  { id:'gt15', no:'GT-15', name:'临时尺寸控制点', shape:'箭头(临时尺寸)', color:C.orange, colorName:'橙', cat:'操纵/参数', xp:'XP-07 临时尺寸',
+    title:'临时尺寸控制点 · 箭头（橙）',
+    desc:'Revit 构件创建/选中时显示的临时尺寸拖拽点（非固定夹点）。拖=改参数值（非直接拉伸），驱动构件尺寸（GR-09）。',
+    hint:'<b>操作：</b>选中墙时出现临时尺寸标注，拖动其控制点改墙长度，数值实时更新；松开后临时尺寸可保留或消失。' },
+  { id:'gt16', no:'GT-16', name:'裁剪/剖切框', shape:'8角点', color:C.gray, colorName:'灰', cat:'关系/曲线/批量', xp:'XP-08/XP-09 裁剪剖切',
+    title:'裁剪/剖切框 · 8 角点（灰）',
+    desc:'视图裁剪框/剖面框的 8 个角点。拖=拉伸改显示范围/剖切位置，可旋转；裁剪框决定视图显示范围（GR-14 显示开关类）。',
+    hint:'<b>操作：</b>拖动裁剪框任意角点，框内平面图被实时裁剪，显示范围随框变化。' },
+  { id:'gt17', no:'GT-17', name:'阵列/间距', shape:'方阵', color:C.gray, colorName:'灰', cat:'关系/曲线/批量', xp:'XP-08 阵列组',
+    title:'阵列/间距 · 方阵（灰）',
+    desc:'阵列/组的间距控制点、阵列起点。拖=改成员间距，数量在属性面板；成组管理可整体编辑。',
+    hint:'<b>操作：</b>拖动灰色方阵夹点向右/下展开，实时预览 2×2、3×3…副本；松手确认；可点击切换「矩形/环形」。' },
+  { id:'gt18', no:'GT-18', name:'子对象/无直接夹点', shape:'Ctrl进入', color:C.gray, colorName:'灰', cat:'关系/曲线/批量', xp:'XP-09/XP-10 无夹点/约束',
+    title:'子对象/无直接夹点 · Ctrl 进入（灰）',
+    desc:'3D 实体/体/布尔对象无顶级夹点，需 Ctrl 进入子对象编辑（顶点/边/面），支持布尔/切片；字段/约束标记无独立夹点（GR-15）。',
+    hint:'<b>操作：</b>先点「按住 Ctrl」徽标进入子对象编辑，再拖动顶面 4 个顶点改形；无顶级夹点态（普通选中）只有虚线框提示。' },
+];
+
+/* 5 种显示状态 */
+const STATES = [
+  { id:'normal',   label:'普通',   desc:'默认样式，按类型形状/颜色显示' },
+  { id:'hover',    label:'悬停',   desc:'鼠标移入：放大 + 近黑描边高亮' },
+  { id:'active',   label:'激活',   desc:'拖动中：实心加大 + 数值反馈' },
+  { id:'locked',   label:'锁定',   desc:'跨文件链接对象：灰色，不可编辑' },
+  { id:'disabled', label:'禁用',   desc:'无编辑权限：隐藏/虚化，不可交互' },
+];
+
+/* =========================================================
+ * SVG 工具
+ * ========================================================= */
+const svg = document.getElementById('canvas');
+const sceneG = document.getElementById('scene');
+const feedback = document.getElementById('feedback');
+
+function clearScene(){ sceneG.innerHTML=''; }
+function svgPoint(evt){
+  const ctm = svg.getScreenCTM ? svg.getScreenCTM() : null;
+  if (ctm && ctm.inverse) {
+    try {
+      const pt = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm.inverse());
+      return pt;
+    } catch(e) { /* fallthrough */ }
+  }
+  return { x: evt.clientX, y: evt.clientY };
+}
+function el(tag, attrs, parent){
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+  (parent||sceneG).appendChild(e);
+  return e;
+}
+function textEl(x, y, str, attrs){
+  const g = el('g', attrs);
+  el('text', Object.assign({x,y,fill:'rgba(255,255,255,.92)',stroke:'rgba(255,255,255,.92)','stroke-width':4,'paint-order':'stroke','font-size':12}, attrs), g).textContent = str;
+  el('text', Object.assign({x,y,fill:'#1B2530','font-size':12}, attrs), g).textContent = str;
+  return g;
+}
+
+/* 夹点工厂：创建任意类型夹点并返回拖拽控制器 */
+function makeGrip(x, y, opt){
+  opt = opt || {};
+  const size = opt.size || 9;
+  const g = el('g', {class:'grip', cursor:'grab'});
+  g.style.setProperty('--gc', opt.fill || C.blue);
+  const k = opt.kind || 'square';
+  let shape;
+  if(k==='square'){       shape = el('rect', {x:-size/2, y:-size/2, width:size, height:size, rx:1.5, fill:opt.fill, stroke:'#fff','stroke-width':1.5}); }
+  else if(k==='hollow'){  shape = el('rect', {x:-size/2, y:-size/2, width:size, height:size, rx:1.5, fill:'#fff', stroke:opt.fill,'stroke-width':2.2}); }
+  else if(k==='tri'){     shape = el('path', {d:`M0 ${-size*0.65} L${size*0.7} ${size*0.5} L${-size*0.7} ${size*0.5} Z`, fill:opt.fill, stroke:'#fff','stroke-width':1.5}); }
+  else if(k==='circle'){  shape = el('circle', {r:size*0.62, fill:opt.fill, stroke:'#fff','stroke-width':1.8}); }
+  else if(k==='diamond'){ shape = el('path', {d:`M0 ${-size*0.7} L${size*0.7} 0 L0 ${size*0.7} L${-size*0.7} 0 Z`, fill:opt.fill, stroke:'#fff','stroke-width':1.5}); }
+  else if(k==='diamondS'){shape = el('path', {d:`M0 ${-size*0.55} L${size*0.55} 0 L0 ${size*0.55} L${-size*0.55} 0 Z`, fill:opt.fill, stroke:'#fff','stroke-width':1.2}); }
+  else if(k==='ring'){    shape = el('circle', {r:size*0.62, fill:'#fff', stroke:opt.fill,'stroke-width':2.6}); }
+  else if(k==='arrow'){   shape = el('path', {d:`M0 ${-size*1.4} L${-size*0.55} ${-size*0.6} L${size*0.55} ${-size*0.6} Z`, fill:opt.fill, stroke:'#fff','stroke-width':1.2}); }
+  g.appendChild(shape);
+  const tName = (TYPES.find(t=>t.id===current)||{}).name || '';
+  if(tName){ const tt = el('title', {}, g); tt.textContent = tName; }
+  if(opt.label){
+    el('text', {x:0, y:-size-5, 'text-anchor':'middle', fill:opt.fill, 'font-size':11, 'font-weight':600}, g).textContent = opt.label;
+  }
+  g.setAttribute('transform', `translate(${x},${y})`);
+  sceneG.appendChild(g);
+
+  const ctl = {
+    g, x, y, opt, size,
+    setPos(nx, ny){ this.x=nx; this.y=ny; g.setAttribute('transform', `translate(${nx},${ny})`); },
+    setState(st){
+      g.setAttribute('class','grip'+(st==='locked'?' grip-locked':st==='disabled'?' grip-disabled':''));
+      if(st==='disabled') g.style.display='none';
+    },
+    bind(onDrag, onDown, onUp){
+      g.addEventListener('mousedown', evt=>{
+        evt.preventDefault(); evt.stopPropagation();
+        g.classList.add('grip-active');
+        const start = svgPoint(evt);
+        const ox = this.x, oy = this.y;
+        if(onDown) onDown(evt);
+        const mv = e2=>{
+          const p = svgPoint(e2);
+          const nx = ox + (p.x - start.x), ny = oy + (p.y - start.y);
+          this.setPos(nx, ny);
+          if(onDrag) onDrag(nx, ny, e2);
+        };
+        const up = ()=>{ document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); g.classList.remove('grip-active'); if(onUp) onUp(); };
+        document.addEventListener('mousemove', mv);
+        document.addEventListener('mouseup', up);
+      });
+    }
+  };
+  return ctl;
+}
+
+/* =========================================================
+ * 场景：GT-01 端点/角点 —— 直线拉伸
+ * ========================================================= */
+function sceneGT01(){
+  let ax=140, ay=300, bx=560, by=130;
+  const line = el('line', {x1:ax, y1:ay, x2:bx, y2:by, stroke:'#1B2530','stroke-width':3, 'stroke-linecap':'round'});
+  el('line', {x1:110, y1:340, x2:700, y2:340, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'6 4'});
+  textEl(120, 368, '拖端点改变线的长度与方向（相邻连接自动保持）');
+  const gA = makeGrip(ax, ay, {kind:'square', fill:C.blue});
+  const gB = makeGrip(bx, by, {kind:'square', fill:C.blue});
+  const upd = ()=>{
+    line.setAttribute('x1',gA.x); line.setAttribute('y1',gA.y);
+    line.setAttribute('x2',gB.x); line.setAttribute('y2',gB.y);
+    const len = Math.hypot(gB.x-gA.x, gB.y-gA.y).toFixed(0);
+    feedback.innerHTML = `长度 <b>${len}</b> px（端点=拉伸）`;
+  };
+  gA.bind(upd); gB.bind(upd); upd();
+}
+
+/* =========================================================
+ * 场景：GT-02 中点/弧中点 —— 整体平移
+ * ========================================================= */
+function sceneGT02(){
+  let mx=410, my=230;
+  const line = el('line', {x1:180, y1:180, x2:640, y2:280, stroke:'#1B2530','stroke-width':3, 'stroke-linecap':'round'});
+  const gM = makeGrip(mx, my, {kind:'hollow', fill:C.blue, size:10});
+  textEl(410, 120, '空心方块 = 中点 · 移动专用（改位置，不改形状）');
+  const upd = ()=>{
+    const dx = gM.x - 410, dy = gM.y - 230;
+    line.setAttribute('x1', 180+dx); line.setAttribute('y1', 180+dy);
+    line.setAttribute('x2', 640+dx); line.setAttribute('y2', 280+dy);
+    feedback.innerHTML = `中点坐标 (<b>${gM.x.toFixed(0)}</b>, <b>${gM.y.toFixed(0)}</b>)（整体平移）`;
+  };
+  gM.bind(upd); upd();
+}
+
+/* =========================================================
+ * 场景：GT-03 圆心/中心 —— 圆平移
+ * ========================================================= */
+function sceneGT03(){
+  let cx=410, cy=235, r=90;
+  const circle = el('circle', {cx, cy, r, fill:'rgba(37,99,235,.1)', stroke:C.blue,'stroke-width':2.5});
+  const hLine = el('line', {x1:cx-r, y1:cy, x2:cx+r, y2:cy, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'5 4'});
+  const vLine = el('line', {x1:cx, y1:cy-r, x2:cx, y2:cy+r, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'5 4'});
+  const gC = makeGrip(cx, cy, {kind:'circle', fill:C.blue, size:11});
+  textEl(410, 90, '圆形夹点 = 圆心/中心：整体平移，几何不变；也是旋转基准');
+  gC.bind(()=>{
+    circle.setAttribute('cx', gC.x); circle.setAttribute('cy', gC.y);
+    hLine.setAttribute('x1', gC.x-r); hLine.setAttribute('x2', gC.x+r);
+    hLine.setAttribute('y1', gC.y);   hLine.setAttribute('y2', gC.y);
+    vLine.setAttribute('y1', gC.y-r); vLine.setAttribute('y2', gC.y+r);
+    vLine.setAttribute('x1', gC.x);   vLine.setAttribute('x2', gC.x);
+    feedback.innerHTML = `圆心 (<b>${gC.x.toFixed(0)}</b>, <b>${gC.y.toFixed(0)}</b>)（移动，半径不变）`;
+  });
+  feedback.innerHTML = '圆心 (410, 235)（移动）';
+}
+
+/* =========================================================
+ * 场景：GT-04 象限 —— 圆改半径
+ * ========================================================= */
+function sceneGT04(){
+  let cx=410, cy=235, r=95;
+  const circle = el('circle', {cx, cy, r, fill:'rgba(37,99,235,.1)', stroke:C.blue,'stroke-width':2.5});
+  el('line', {x1:cx-r, y1:cy, x2:cx+r, y2:cy, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'5 4'});
+  el('line', {x1:cx, y1:cy-r, x2:cx, y2:cy+r, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'5 4'});
+  const pos = [[cx+r,cy],[cx-r,cy],[cx,cy+r],[cx,cy-r]];
+  const grips = [];
+  pos.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'diamond', fill:C.blue, size:9});
+    grips.push(g);
+    g.bind((nx,ny)=>{
+      const nr = Math.max(25, Math.min(180, Math.hypot(nx-cx, ny-cy)));
+      circle.setAttribute('r', nr);
+      grips[0].setPos(cx+nr, cy); grips[1].setPos(cx-nr, cy);
+      grips[2].setPos(cx, cy+nr); grips[3].setPos(cx, cy-nr);
+      feedback.innerHTML = `半径 <b>${nr.toFixed(0)}</b> px（象限=拉伸，圆心不动）`;
+    });
+  });
+  textEl(410, 90, '菱形象限点 = 改半径（0/90/180/270°），拖任意一个均可');
+  feedback.innerHTML = '半径 95 px（拖象限改半径）';
+}
+
+/* =========================================================
+ * 场景：GT-05 插入点/基点 —— 家具块移动
+ * ========================================================= */
+function sceneGT05(){
+  let ix=350, iy=260;
+  const draw = ()=>{
+    const g = el('g');
+    el('rect', {x:ix-90, y:iy-40, width:180, height:70, rx:8, fill:'rgba(245,128,31,.16)', stroke:C.orange,'stroke-width':2.2}, g);
+    el('rect', {x:ix-84, y:iy-32, width:70, height:26, rx:6, fill:C.orange, opacity:.5}, g);
+    el('rect', {x:ix+14, y:iy-32, width:70, height:26, rx:6, fill:C.orange, opacity:.5}, g);
+    el('rect', {x:ix-100, y:iy-40, width:16, height:70, rx:4, fill:'rgba(245,128,31,.45)'}, g);
+    el('rect', {x:ix+84, y:iy-40, width:16, height:70, rx:4, fill:'rgba(245,128,31,.45)'}, g);
+    return g;
+  };
+  let lastDraw = draw();
+  const gI = makeGrip(ix, iy, {kind:'diamondS', fill:C.orange, size:12});
+  gI.bind(()=>{
+    lastDraw.remove();
+    lastDraw = draw();
+    feedback.innerHTML = `插入点 (<b>${gI.x.toFixed(0)}</b>, <b>${gI.y.toFixed(0)}</b>)（块整体移动）`;
+  });
+  textEl(410, 90, '实心菱形 = 块参照/族实例的插入点（定位基准），拖动整体移动');
+  feedback.innerHTML = '插入点 (350, 260)';
+}
+
+/* =========================================================
+ * 场景：GT-06 顶点/控制点 —— 样条曲线控制点
+ * ========================================================= */
+function sceneGT06(){
+  const cpts = [[140,340],[300,140],[500,340],[680,140]];
+  const path = el('path', {d:'', fill:'none', stroke:C.blue,'stroke-width':3, 'stroke-linecap':'round'});
+  let poly = el('polyline', {points:'', fill:'none', stroke:'#9DB8F5','stroke-width':1, 'stroke-dasharray':'4 4'});
+  const grips = [];
+  cpts.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'diamondS', fill:C.blue, size:9});
+    grips.push(g);
+    g.bind(update);
+  });
+  function update(){
+    const d = `M ${grips[0].x} ${grips[0].y} C ${grips[1].x} ${grips[1].y}, ${grips[2].x} ${grips[2].y}, ${grips[3].x} ${grips[3].y}`;
+    path.setAttribute('d', d);
+    poly.setAttribute('points', grips.map(g=>`${g.x.toFixed(1)},${g.y.toFixed(1)}`).join(' '));
+    feedback.innerHTML = '控制点 <b>4</b> 个 · 曲线随控制点实时重绘（可增删顶点）';
+  }
+  textEl(410, 60, '蓝色小菱形 = 顶点/控制点：拖改变曲线形态；虚线=控制多边形');
+  update();
+}
+
+/* =========================================================
+ * 场景：GT-07 轮廓/范围/边界 —— 楼板轮廓改形
+ * ========================================================= */
+function sceneGT07(){
+  const pts = [[260,150],[430,110],[600,170],[640,320],[430,360],[230,300]];
+  let poly = el('polygon', {points:'', fill:'rgba(37,99,235,.12)', stroke:C.blue,'stroke-width':2.5, 'stroke-linejoin':'round'});
+  const grips = [];
+  pts.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'tri', fill:C.blue, size:11});
+    grips.push(g);
+    g.bind(()=>{
+      poly.setAttribute('points', grips.map(g=>`${g.x.toFixed(1)},${g.y.toFixed(1)}`).join(' '));
+      feedback.innerHTML = '轮廓顶点 <b>6</b> · 轮廓随构件联动（楼板/屋顶/空间边界）';
+    });
+  });
+  textEl(410, 66, '三角顶点 = 轮廓/范围/边界夹点：拖顶点自由改形');
+  poly.setAttribute('points', pts.map(p=>p.join(',')).join(' '));
+  feedback.innerHTML = '轮廓顶点 6 · 拖任意顶点改形（联动 GR-08）';
+}
+
+/* =========================================================
+ * 场景：GT-08 路径 —— 栏杆路径
+ * ========================================================= */
+function sceneGT08(){
+  const pts = [[130,330],[300,150],[520,290],[690,130]];
+  let poly = el('polyline', {points:'', fill:'none', stroke:C.gray,'stroke-width':3, 'stroke-linejoin':'round','stroke-linecap':'round'});
+  const grips = [];
+  const posts = [];
+  pts.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'diamondS', fill:C.gray, size:9});
+    grips.push(g);
+    g.bind(update);
+    // 立柱（沿路径对象）
+    const post = el('line', {x1:p[0], y1:p[1]+18, x2:p[0], y2:p[1]+46, stroke:C.gray,'stroke-width':3});
+    posts.push(post);
+  });
+  function update(){
+    poly.setAttribute('points', grips.map(g=>`${g.x.toFixed(1)},${g.y.toFixed(1)}`).join(' '));
+    grips.forEach((g,i)=>{
+      posts[i].setAttribute('x1', g.x); posts[i].setAttribute('x2', g.x);
+      posts[i].setAttribute('y1', g.y+18); posts[i].setAttribute('y2', g.y+46);
+    });
+    feedback.innerHTML = '路径控制点 <b>4</b> · 沿路径的立柱随路径更新（栏杆/坡道/导线）';
+  }
+  textEl(410, 70, '灰色小菱形 = 路径控制点：拖改路径走向，立柱跟随');
+  update();
+}
+
+/* =========================================================
+ * 场景：GT-09 截面 —— 梁截面宽高
+ * ========================================================= */
+function sceneGT09(){
+  let W = 190, H = 120, cx = 400, cy = 250;
+  const rect = el('rect', {x:cx-W/2, y:cy-H/2, width:W, height:H, fill:'rgba(37,99,235,.12)', stroke:C.blue,'stroke-width':2.5, rx:3});
+  el('line', {x1:cx, y1:cy-H/2, x2:cx, y2:cy-H/2-34, stroke:C.blue,'stroke-width':1.2});
+  el('line', {x1:cx, y1:cy+H/2, x2:cx, y2:cy+H/2+26, stroke:C.blue,'stroke-width':1.2});
+  el('line', {x1:cx-W/2, y1:cy, x2:cx-W/2-30, y2:cy, stroke:C.blue,'stroke-width':1.2});
+  el('line', {x1:cx+W/2, y1:cy, x2:cx+W/2+22, y2:cy, stroke:C.blue,'stroke-width':1.2});
+  const gT = makeGrip(cx, cy-H/2-34, {kind:'tri', fill:C.blue, size:10, label:'H'});
+  const gR = makeGrip(cx+W/2+22, cy, {kind:'tri', fill:C.blue, size:10, label:'W'});
+  const valT = textEl(cx+W/2+34, cy-H/2-30, '', {}); valT.setAttribute('text-anchor','start');
+  const upd = ()=>{
+    H = Math.max(40, Math.min(220, 2*(cy - gT.y) - 68));
+    W = Math.max(60, Math.min(320, 2*(gR.x - cx) - 44));
+    rect.setAttribute('width', W); rect.setAttribute('height', H);
+    rect.setAttribute('x', cx-W/2); rect.setAttribute('y', cy-H/2);
+    gT.setPos(cx, cy-H/2-34); gR.setPos(cx+W/2+22, cy);
+    valT.childNodes.forEach(n=>{ n.textContent = `H=${(H*10).toFixed(0)}  W=${(W*10).toFixed(0)} mm`; });
+    feedback.innerHTML = `梁截面 <b>${(W*10).toFixed(0)}×${(H*10).toFixed(0)}</b> mm（截面联动构件几何 GR-08）`;
+  };
+  gT.bind(upd); gR.bind(upd);
+  textEl(410, 78, '三角夹点 = 截面轮廓控制点：上=改高 H，右=改宽 W');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-10 连接点 —— 风管接风口
+ * ========================================================= */
+function sceneGT10(){
+  el('rect', {x:120, y:150, width:60, height:230, fill:'rgba(107,114,128,.07)', stroke:C.gray,'stroke-width':2, 'stroke-dasharray':'4 3'});
+  textEl(150, 132, '风口');
+  let bx = 300, by = 210, bw = 180, bh = 50;
+  const beam = el('rect', {x:bx, y:by, width:bw, height:bh, fill:'rgba(107,114,128,.14)', stroke:C.gray,'stroke-width':2.5, rx:3});
+  const beamLabel = textEl(bx+bw/2, by+bh/2+4, '风管段');
+  const gC = makeGrip(bx, by+bh/2, {kind:'ring', fill:C.gray, size:11});
+  const upd = ()=>{
+    bx = Math.max(180, Math.min(620, gC.x));
+    gC.setPos(bx, by+bh/2);
+    beam.setAttribute('x', bx);
+    beamLabel.setAttribute('transform', `translate(${bx-300},0)`);
+    const connected = bx <= 180 + 2;
+    beam.setAttribute('fill', connected ? 'rgba(107,114,128,.18)' : 'rgba(107,114,128,.07)');
+    feedback.innerHTML = connected
+      ? '连接 <b style="color:#7FB2FF">保持</b>：风管段搭接风口，变径联动（GR-11）'
+      : '连接 <b style="color:#F5801F">已断开</b>：拖离风口容许范围';
+  };
+  gC.bind(upd);
+  textEl(410, 95, '灰色圆环 = 连接点：拖对齐相邻管件并联动（管件/风管/桥架/设备接口）');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-11 参数 —— 管径参数柄
+ * ========================================================= */
+function sceneGT11(){
+  let d = 70, cx = 410;
+  const pipe = el('rect', {x:200, y:230-d/2, width:420, height:d, fill:'rgba(245,128,31,.14)', stroke:C.orange,'stroke-width':2.5, rx:3});
+  el('line', {x1:632, y1:230-d/2, x2:646, y2:230-d/2, stroke:C.orange,'stroke-width':1.2});
+  el('line', {x1:632, y1:230+d/2, x2:646, y2:230+d/2, stroke:C.orange,'stroke-width':1.2});
+  el('line', {x1:646, y1:230-d/2, x2:646, y2:230+d/2, stroke:C.orange,'stroke-width':1.2});
+  const arrow = el('path', {d:`M646 230 L640 220 M646 230 L652 220 M646 230 L646 214`, stroke:C.orange,'stroke-width':2, fill:'none'});
+  const valText = textEl(670, 232, '', {}); valText.setAttribute('text-anchor','start');
+  const gP = makeGrip(646, 230, {kind:'arrow', fill:C.orange, size:9});
+  const upd = ()=>{
+    d = Math.max(30, Math.min(140, Math.abs(gP.y - 230)*2));
+    pipe.setAttribute('y', 230-d/2); pipe.setAttribute('height', d);
+    arrow.setAttribute('d', `M646 230 L640 220 M646 230 L652 220 M646 230 L646 214`);
+    valText.childNodes.forEach(n=>{ n.textContent = `Ø=${(d*2).toFixed(0)} mm`; });
+    feedback.innerHTML = `管径 Ø = <b>${(d*2).toFixed(0)}</b> mm（参数夹点，面板可改 GR-13）`;
+  };
+  gP.bind(upd);
+  textEl(410, 80, '橙色数值箭头 = 参数化夹点：拖改管径/坡度/标高，非纯几何拉伸');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-12 方向/旋转/翻转 —— 门朝向
+ * ========================================================= */
+function sceneGT12(){
+  let flipped = false;
+  const W = 130, H = 110;
+  const doorG = el('g', {transform:'translate(340,180)'});
+  el('rect', {x:0, y:0, width:W, height:H, fill:'rgba(245,128,31,.1)', stroke:C.orange,'stroke-width':2.5}, doorG);
+  const swing = el('path', {d:'', fill:'rgba(245,128,31,.28)', stroke:C.orange,'stroke-width':2}, doorG);
+  const handle = el('circle', {r:4, fill:C.orange}, doorG);
+  function drawSwing(){
+    if(!flipped){
+      swing.setAttribute('d', `M0 0 L${W} 0 A ${W} ${H} 0 0 0 0 ${H} Z`);
+      handle.setAttribute('cx', W-8); handle.setAttribute('cy', H/2);
+    }else{
+      swing.setAttribute('d', `M0 0 A ${W} ${H} 0 0 1 0 ${H} L${W} ${H} L${W} 0 Z`);
+      handle.setAttribute('cx', 8); handle.setAttribute('cy', H/2);
+    }
+  }
+  drawSwing();
+  const fl = el('g', {class:'clickable', transform:'translate(405,150)', cursor:'pointer'});
+  const flInner = el('g', {}, fl);
+  el('line', {x1:-16, y1:0, x2:16, y2:0, stroke:C.orange,'stroke-width':2.6}, flInner);
+  el('path', {d:'M-16 0 L-10 -6 M-16 0 L-10 6', stroke:C.orange,'stroke-width':2.6, fill:'none','stroke-linecap':'round'}, flInner);
+  el('path', {d:'M16 0 L10 -6 M16 0 L10 6', stroke:C.orange,'stroke-width':2.6, fill:'none','stroke-linecap':'round'}, flInner);
+  fl.addEventListener('click', ()=>{
+    flipped = !flipped;
+    drawSwing();
+    feedback.innerHTML = flipped ? '门朝向：<b>外开</b>（方向/旋转/翻转夹点，单击切回）' : '门朝向：<b>内开</b>（方向/旋转/翻转夹点）';
+  });
+  textEl(410, 80, '双向箭头 = 方向/旋转/翻转夹点：单击离散翻转（风口方向/门窗朝向）');
+  feedback.innerHTML = '门朝向：内开（单击双向箭头切换）';
+}
+
+/* =========================================================
+ * 场景：GT-13 文字位置 —— 标注文字拖动（文字标签跟随 + 关联/断开）
+ * ========================================================= */
+function sceneGT13(){
+  const x1 = 200, x2 = 620, y = 300, cx = (x1+x2)/2;
+  el('line', {x1, y1:y, x2, y2:y, stroke:'#1B2530','stroke-width':2.5});
+  el('line', {x1, y1:y, x2:x1, y2:y+24, stroke:'#C7CEDB','stroke-width':1});
+  el('line', {x1:x2, y1:y, x2:x2, y2:y+24, stroke:'#C7CEDB','stroke-width':1});
+  textEl(cx, y+22, 'L=3000');
+  // 文字标签：随夹点整体移动（圆角框 + 文字）
+  const tag = el('g', {transform:`translate(${cx},${y-84})`});
+  el('rect', {x:-30, y:-15, width:60, height:30, rx:6, fill:C.orange, opacity:.16}, tag);
+  el('rect', {x:-30, y:-15, width:60, height:30, rx:6, fill:'none', stroke:C.orange,'stroke-width':1.6}, tag);
+  const tagText = el('text', {x:0, y:5, 'text-anchor':'middle', fill:C.orange,'font-size':13,'font-weight':700}, tag);
+  tagText.textContent = '文字';
+  let conn = el('line', {x1:cx, y1:y+8, x2:cx, y2:y-84, stroke:'#C7CEDB','stroke-width':1, 'stroke-dasharray':'3 3'});
+  const gT = makeGrip(cx, y-84, {kind:'square', fill:C.orange, size:11});
+  const upd = ()=>{
+    tag.setAttribute('transform', `translate(${gT.x},${gT.y})`);
+    conn.setAttribute('x1', cx); conn.setAttribute('y1', y+8);
+    conn.setAttribute('x2', gT.x); conn.setAttribute('y2', gT.y);
+    const dist = Math.hypot(gT.x-cx, gT.y-(y+8));
+    const linked = dist < 80;
+    conn.setAttribute('stroke', linked ? '#C7CEDB' : 'none');
+    tagText.setAttribute('fill', linked ? C.orange : C.gray);
+    feedback.innerHTML = linked
+      ? '文字 <b style="color:#F5801F">关联</b>：标注值随图元更新（DIM 关联 GR-05）'
+      : '文字 <b style="color:#6B7280">已断开</b>：拖出标注范围，不再随图元更新';
+  };
+  gT.bind(upd);
+  textEl(410, 90, '橙色方块+「文字」标签 = 文字位置夹点：拖标签移动标注文字/轴号/标高符号');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-14 标注定义点 —— 尺寸标注（定义点锁定在线段上）
+ * ========================================================= */
+function sceneGT14(){
+  let x1 = 200, x2 = 620, y = 290;
+  const line = el('line', {x1:x1, y1:y, x2:x2, y2:y, stroke:'#1B2530','stroke-width':2.5});
+  const gL = makeGrip(x1, y, {kind:'hollow', fill:C.blue, size:10});
+  const gR = makeGrip(x2, y, {kind:'hollow', fill:C.blue, size:10});
+  const dimText = textEl(410, y+34, '');
+  const upd = ()=>{
+    // 定义点锁定在标注线上：Y 固定为线段高度，X 限幅并防止左右交错
+    gL.setPos(Math.max(150, Math.min(620, gL.x)), y);
+    gR.setPos(Math.max(180, Math.min(670, gR.x)), y);
+    if(gL.x >= gR.x - 20){ gR.setPos(gL.x + 20, y); }
+    line.setAttribute('x1', gL.x); line.setAttribute('x2', gR.x);
+    const L = Math.abs(gR.x - gL.x);
+    dimText.setAttribute('transform', `translate(${(gL.x+gR.x)/2-410},0)`);
+    dimText.childNodes.forEach(n=>{ n.textContent = `L=${(L*5).toFixed(0)}`; });
+    feedback.innerHTML = `标注值 <b>${(L*5).toFixed(0)}</b>（定义点=测量点，锁定在线段上拖动，随图元自动更新 GR-05）`;
+  };
+  gL.bind(upd); gR.bind(upd);
+  textEl(410, 110, '空心方块 = 标注定义点（测量点）：始终锁定在标注线上拖动，拖改测量值');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-15 临时尺寸控制点 —— Revit 墙高
+ * ========================================================= */
+function sceneGT15(){
+  let h = 120, baseY = 330;
+  const wall = el('rect', {x:280, y:baseY-h, width:220, height:h, fill:'rgba(245,128,31,.12)', stroke:C.orange,'stroke-width':2.5, rx:3});
+  // 临时尺寸标注：延伸线 + 上下刻度线（跟随图形高度实时重绘）
+  const dimV = el('line', {x1:528, y1:baseY-h, x2:528, y2:baseY, stroke:C.orange,'stroke-width':1.4});
+  const tickT = el('line', {x1:512, y1:baseY-h, x2:528, y2:baseY-h, stroke:C.orange,'stroke-width':1.4});
+  const tickB = el('line', {x1:512, y1:baseY, x2:528, y2:baseY, stroke:C.orange,'stroke-width':1.4});
+  const valText = textEl(560, baseY-h/2+4, ''); valText.setAttribute('text-anchor','start');
+  const gP = makeGrip(528, baseY-h/2, {kind:'arrow', fill:C.orange, size:9});
+  const upd = ()=>{
+    const nh = Math.max(40, Math.min(220, 2*(baseY - gP.y)));
+    h = nh;
+    wall.setAttribute('y', baseY-h); wall.setAttribute('height', h);
+    dimV.setAttribute('y1', baseY-h);
+    tickT.setAttribute('y1', baseY-h);
+    valText.setAttribute('transform', `translate(0, ${(baseY-h/2+4) - 274})`);
+    valText.childNodes.forEach(n=>{ n.textContent = `H=${(h*10).toFixed(0)}`; });
+    feedback.innerHTML = `墙高 H = <b>${(h*10).toFixed(0)}</b> mm（临时尺寸驱动参数 GR-09，尺寸标注跟随图形）`;
+  };
+  gP.bind(upd);
+  textEl(410, 80, '临时尺寸（选中时出现）：拖控制点改参数值，尺寸标注线随图形实时更新');
+  upd();
+}
+
+/* =========================================================
+ * 场景：GT-16 裁剪/剖切框 —— 视图裁剪
+ * ========================================================= */
+function sceneGT16(){
+  const vx = 120, vy = 90, vw = 580, vh = 300;
+  el('rect', {x:vx, y:vy, width:vw, height:vh, fill:'none', stroke:'#C7CEDB','stroke-width':1.5, 'stroke-dasharray':'6 4'});
+  // 框内平面图（用裁剪路径实时裁剪）
+  const rooms = el('g', {style:'clip-path:url(#cropClip)'});
+  el('rect', {x:200, y:150, width:140, height:100, fill:'rgba(107,114,128,.10)', stroke:C.gray,'stroke-width':1.5}, rooms);
+  el('rect', {x:360, y:150, width:180, height:100, fill:'rgba(107,114,128,.16)', stroke:C.gray,'stroke-width':1.5}, rooms);
+  el('rect', {x:200, y:270, width:180, height:90, fill:'rgba(107,114,128,.12)', stroke:C.gray,'stroke-width':1.5}, rooms);
+  el('rect', {x:400, y:270, width:160, height:90, fill:'rgba(107,114,128,.08)', stroke:C.gray,'stroke-width':1.5}, rooms);
+  // 裁剪框
+  let cx = 300, cy = 180, cw = 220, ch = 160;
+  const crop = el('rect', {x:cx, y:cy, width:cw, height:ch, fill:'rgba(107,114,128,.05)', stroke:C.gray,'stroke-width':2.5});
+  const updateClip = ()=>{
+    document.getElementById('cropRectShape').setAttribute('x', cx);
+    document.getElementById('cropRectShape').setAttribute('y', cy);
+    document.getElementById('cropRectShape').setAttribute('width', cw);
+    document.getElementById('cropRectShape').setAttribute('height', ch);
+    crop.setAttribute('x', cx); crop.setAttribute('y', cy);
+    crop.setAttribute('width', cw); crop.setAttribute('height', ch);
+  };
+  // 8 个角点
+  const corners = [[cx,cy],[cx+cw,cy],[cx+cw,cy+ch],[cx,cy+ch],[cx+cw/2,cy],[cx+cw,cy+ch/2],[cx+cw/2,cy+ch],[cx,cy+ch/2]];
+  const grips = [];
+  corners.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'hollow', fill:C.gray, size:8});
+    grips.push(g);
+    g.bind(()=>{
+      if(i===0){ cx=g.x; cy=g.y; }
+      else if(i===1){ cw=g.x-cx; cy=g.y; }
+      else if(i===2){ cw=g.x-cx; ch=g.y-cy; }
+      else if(i===3){ cx=g.x; ch=g.y-cy; }
+      else if(i===4){ cy=g.y; }
+      else if(i===5){ cw=g.x-cx; }
+      else if(i===6){ ch=g.y-cy; }
+      else if(i===7){ cx=g.x; }
+      cw=Math.max(60,cw); ch=Math.max(60,ch);
+      updateClip();
+      grips[0].setPos(cx,cy); grips[1].setPos(cx+cw,cy); grips[2].setPos(cx+cw,cy+ch); grips[3].setPos(cx,cy+ch);
+      grips[4].setPos(cx+cw/2,cy); grips[5].setPos(cx+cw,cy+ch/2); grips[6].setPos(cx+cw/2,cy+ch); grips[7].setPos(cx,cy+ch/2);
+      feedback.innerHTML = `裁剪范围 <b>${cw.toFixed(0)}×${ch.toFixed(0)}</b>（8 角点拉伸，GR-14 显示开关类）`;
+    });
+  });
+  updateClip();
+  textEl(410, 60, '空心方块 8 角点 = 视图裁剪/剖切框：拖角点改显示范围，框内平面图被实时裁剪');
+  feedback.innerHTML = '裁剪范围 220×160（拖 8 个角点）';
+}
+
+/* =========================================================
+ * 场景：GT-17 阵列/间距 —— 柱网方阵
+ * ========================================================= */
+function sceneGT17(){
+  let cols = 1, rows = 1, mode = 'rect';
+  const startX = 170, startY = 200, gap = 66;
+  const pillar = (x,y,preview,parent)=>{
+    el('rect', {x:x-13, y:y-13, width:26, height:26, rx:3,
+      fill: preview ? 'rgba(107,114,128,.16)' : 'rgba(107,114,128,.28)',
+      stroke:C.gray,'stroke-width':preview?1.5:2}, parent||sceneG);
+  };
+  pillar(startX, startY, false);
+  el('text',{x:startX, y:startY-26, 'text-anchor':'middle', fill:C.gray,'font-size':11}, sceneG).textContent='柱(原始)';
+  const modeBtn = textEl(660, 50, '模式：矩形（点击切换环形）', {class:'clickable'});
+  modeBtn.addEventListener('click', ()=>{
+    mode = mode==='rect' ? 'ring' : 'rect';
+    modeBtn.childNodes[1].textContent = '模式：'+(mode==='rect'?'矩形':'环形')+'（点击切换）';
+    if(cols>1 || rows>1){ redraw(false); }
+  });
+  const gA = makeGrip(startX, startY, {kind:'diamondS', fill:C.gray, size:10});
+  function redraw(preview){
+    sceneG.querySelectorAll('.arr-p').forEach(n=>n.remove());
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      if(r===0 && c===0) continue;
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class','arr-p');
+      sceneG.appendChild(g);
+      if(mode==='rect'){
+        pillar(startX + c*gap, startY + r*gap, preview, g);
+      }else{
+        const total = Math.max(1, cols*rows);
+        const ang = (r*cols+c) * (2*Math.PI/total);
+        pillar(startX + Math.cos(ang)*gap*1.7, startY + Math.sin(ang)*gap*1.7, preview, g);
+      }
+    }
+  }
+  gA.bind((nx,ny)=>{
+    cols = Math.max(1, Math.min(8, Math.round((nx-startX)/gap)+1));
+    rows = Math.max(1, Math.min(6, Math.round((ny-startY)/gap)+1));
+    redraw(true);
+    feedback.innerHTML = `阵列 <b>${cols} × ${rows}</b> = ${cols*rows} 个副本（间距夹点，数量在面板 GR-13）`;
+  }, null, ()=>{
+    if(cols>1||rows>1){ redraw(false); feedback.innerHTML = `已生成 ${cols}×${rows} 阵列（成组管理）`; }
+  });
+  textEl(410, 90, '灰色方阵 = 阵列/间距夹点：拖改成员间距，向右/下展开副本');
+  feedback.innerHTML = '拖动方阵生成柱网副本';
+}
+
+/* =========================================================
+ * 场景：GT-18 子对象/无直接夹点 —— Ctrl 进入子对象编辑
+ * ========================================================= */
+function sceneGT18(){
+  let subMode = false;
+  // 全部使用绝对坐标，对象居中（视口 820×460，中心约 410,240）
+  const topPts = [[290,170],[340,110],[540,110],[490,170]];
+  const front = el('rect', {x:290, y:170, width:200, height:130, fill:'rgba(107,114,128,.10)', stroke:C.gray,'stroke-width':2.5});
+  const top = el('polygon', {points:topPts.map(p=>p.join(',')).join(' '), fill:'rgba(107,114,128,.16)', stroke:C.gray,'stroke-width':2.5, 'stroke-linejoin':'round'});
+  el('line', {x1:490, y1:300, x2:540, y2:240, stroke:C.gray,'stroke-width':2.5});
+  const dashBox = el('rect', {x:282, y:102, width:268, height:208, fill:'none', stroke:C.gray,'stroke-width':1.5, 'stroke-dasharray':'5 4', opacity:.6});
+  const grips = [];
+  topPts.forEach((p,i)=>{
+    const g = makeGrip(p[0], p[1], {kind:'circle', fill:C.gray, size:8});
+    g.g.style.display='none';
+    grips.push(g);
+    g.bind(()=>{
+      top.setAttribute('points', grips.map(gg=>`${gg.x},${gg.y}`).join(' '));
+      front.setAttribute('x', grips[0].x); front.setAttribute('y', grips[0].y);
+      front.setAttribute('width', grips[3].x - grips[0].x);
+      feedback.innerHTML = '子对象编辑：顶面顶点 <b>4</b> · 拖顶点改形（布尔/切片同此进入方式 GR-10）';
+    });
+  });
+  // Ctrl 徽标（点击进入子对象编辑）
+  const ctrl = el('g', {class:'clickable', transform:'translate(410,80)', cursor:'pointer'});
+  const ci = el('g', {}, ctrl);
+  el('rect', {x:-58, y:-18, width:116, height:36, rx:18, fill:C.gray, opacity:.12}, ci);
+  el('rect', {x:-58, y:-18, width:116, height:36, rx:18, fill:'none', stroke:C.gray,'stroke-width':2, 'stroke-dasharray':'4 3'}, ci);
+  const ctrlText = el('text', {x:0, y:6, 'text-anchor':'middle', fill:C.gray,'font-size':15,'font-weight':700}, ci);
+  ctrlText.textContent = '按住 Ctrl';
+  ctrl.addEventListener('click', ()=>{
+    subMode = !subMode;
+    grips.forEach(g=>{ g.g.style.display = subMode ? '' : 'none'; });
+    dashBox.setAttribute('opacity', subMode ? 0 : .6);
+    ctrlText.textContent = subMode ? '已进入子对象编辑' : '按住 Ctrl';
+    feedback.innerHTML = subMode
+      ? '已进入 <b>子对象编辑</b>：拖动顶面 4 个顶点改形（无顶级夹点，Ctrl 进入 GR-10）'
+      : '无顶级夹点：默认选中只有虚线框，需按住 Ctrl 进入子对象编辑';
+  });
+  textEl(410, 50, 'GT-18 无顶级夹点（3D 实体/体/布尔）：虚线框=普通选中态，点徽标进入子对象编辑');
+  feedback.innerHTML = '无顶级夹点：点击「按住 Ctrl」进入子对象编辑';
+}
+
+/* =========================================================
+ * 场景调度
+ * ========================================================= */
+const SCENES = {
+  gt01: sceneGT01, gt02: sceneGT02, gt03: sceneGT03, gt04: sceneGT04,
+  gt05: sceneGT05, gt06: sceneGT06, gt07: sceneGT07, gt08: sceneGT08,
+  gt09: sceneGT09, gt10: sceneGT10, gt11: sceneGT11, gt12: sceneGT12,
+  gt13: sceneGT13, gt14: sceneGT14, gt15: sceneGT15, gt16: sceneGT16,
+  gt17: sceneGT17, gt18: sceneGT18,
+};
+
+let current = 'gt01';
+function switchScene(id){
+  current = id;
+  const t = TYPES.find(x=>x.id===id);
+  clearScene();
+  SCENES[id]();
+  document.getElementById('stageTitle').innerHTML =
+    `${t.no} ${t.title} <span class="tag" style="background:${t.color}">${t.shape} · ${t.colorName}</span><span class="xp">${t.xp}</span>`;
+  document.getElementById('stageDesc').textContent = t.desc;
+  document.getElementById('stageHint').innerHTML = t.hint;
+  document.getElementById('stageMeta').innerHTML =
+    `<b>覆盖对象数 ${t.cover||'—'}</b>　·　<b>类别</b>：${t.cat}（${t.colorName}）　·　<b>形状</b>：${t.shape}　·　<b>状态规则</b>：普通=原色；悬停=高亮放大；激活=实心加大；锁定=灰色（跨文件链接对象）；禁用=隐藏`;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+  document.querySelectorAll('.lg').forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+}
+
+/* =========================================================
+ * 渲染：映射表 + 导航 + 图例 + 状态条
+ * ========================================================= */
+(function build(){
+  // 视觉样式规范映射表
+  const mapRows = [
+    ['线/梁/墙/柱/管两端、尺寸标注延伸线', 'GT-01', '端点/角点'],
+    ['线/墙/梁中点、文字框边中点', 'GT-02', '中点/弧中点'],
+    ['多边形、板/墙轮廓、空间边界、基坑边界', 'GT-07', '轮廓/范围/边界'],
+    ['圆/圆弧/柱/设备/功能模块中心', 'GT-03', '圆心/中心'],
+    ['圆、圆弧', 'GT-04', '象限'],
+    ['块参照、外部参照、链接实例', 'GT-05', '插入点/基点'],
+    ['梁截面/门高/风管尺寸/标高偏移/踏步数', 'GT-11', '参数'],
+    ['梁搭墙/柱、管道连设备、风管接风口、空间随墙', 'GT-10', '连接点'],
+    ['样条控制点、曲面、放样路径、盘管路径', 'GT-06 / GT-08', '顶点/控制点 · 路径'],
+    ['门/窗/设备朝向、开关方向', 'GT-12', '方向/旋转/翻转'],
+    ['柱网/窗/灯具/支吊架/钢筋分布', 'GT-17', '阵列/间距'],
+  ];
+  const mb = document.getElementById('mapBody');
+  mapRows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r[0]}</td><td class="gt">${r[1]}</td><td>${r[2]}</td>`;
+    mb.appendChild(tr);
+  });
+  // 另有 6 类由 V6 方案表补充：GT-09 截面 / GT-13 文字位置 / GT-14 标注定义点 / GT-15 临时尺寸 / GT-16 裁剪剖切 / GT-18 子对象无夹点
+  const tr2 = document.createElement('tr');
+  tr2.innerHTML = `<td>（V6 方案表补充）型钢/梁截面、标注文字/轴号、标注测量点、Revit 临时尺寸、视图裁剪/剖面框、3D 实体子对象</td><td class="gt">GT-09 / GT-13 / GT-14 / GT-15 / GT-16 / GT-18</td><td>截面 / 文字位置 / 标注定义点 / 临时尺寸 / 裁剪剖切 / 子对象无夹点</td>`;
+  mb.appendChild(tr2);
+
+  // 导航（18）
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '<div class="nav-t">夹点定义 GT-01~18</div>';
+  TYPES.forEach(t=>{
+    const d = document.createElement('div');
+    d.className = 'nav-item'; d.dataset.id = t.id;
+    d.innerHTML = `<span class="no">${t.no}</span><span class="dot" style="background:${t.color}"></span>${t.name}`;
+    d.addEventListener('click', ()=>switchScene(t.id));
+    nav.appendChild(d);
+  });
+  // 图例（18）
+  const shapes = {
+    gt01:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="'+C.blue+'"/>',
+    gt02:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="#fff" stroke="'+C.blue+'" stroke-width="2.4"/>',
+    gt03:'<circle cx="10" cy="10" r="6.5" fill="'+C.blue+'"/>',
+    gt04:'<path d="M10 2.5 L17.5 10 L10 17.5 L2.5 10 Z" fill="'+C.blue+'"/>',
+    gt05:'<path d="M10 3 L16 10 L10 17 L4 10 Z" fill="'+C.orange+'"/>',
+    gt06:'<path d="M10 4.5 L15 10 L10 15.5 L5 10 Z" fill="'+C.blue+'"/>',
+    gt07:'<path d="M10 3 L17 16 L3 16 Z" fill="'+C.blue+'"/>',
+    gt08:'<path d="M10 4.5 L15 10 L10 15.5 L5 10 Z" fill="'+C.gray+'"/>',
+    gt09:'<path d="M3 6 H17 M3 10 H17 M3 14 H17 M5 4 V16 M15 4 V16" stroke="'+C.blue+'" stroke-width="1.8" fill="none"/>',
+    gt10:'<circle cx="10" cy="10" r="6.5" fill="#fff" stroke="'+C.gray+'" stroke-width="2.8"/>',
+    gt11:'<path d="M10 2 L13 9 L7 9 Z" fill="'+C.orange+'"/>',
+    gt12:'<path d="M3 10 H17 M14 6 L18 10 L14 14 M6 6 L2 10 L6 14" stroke="'+C.orange+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+    gt13:'<rect x="4" y="7" width="8" height="8" rx="1" fill="'+C.orange+'"/><text x="15" y="15" font-size="8" fill="'+C.orange+'">A</text>',
+    gt14:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="#fff" stroke="'+C.blue+'" stroke-width="2.4"/>',
+    gt15:'<path d="M10 3 L13 9 L7 9 Z" fill="'+C.orange+'"/><line x1="5" y1="14" x2="15" y2="14" stroke="'+C.orange+'" stroke-width="1.4" stroke-dasharray="2 1.5"/>',
+    gt16:'<rect x="4" y="4" width="12" height="12" rx="1" fill="none" stroke="'+C.gray+'" stroke-width="1.8"/><circle cx="4" cy="4" r="1.8" fill="'+C.gray+'"/><circle cx="16" cy="4" r="1.8" fill="'+C.gray+'"/><circle cx="16" cy="16" r="1.8" fill="'+C.gray+'"/><circle cx="4" cy="16" r="1.8" fill="'+C.gray+'"/>',
+    gt17:'<rect x="4" y="4" width="5.5" height="5.5" fill="'+C.gray+'"/><rect x="10.5" y="4" width="5.5" height="5.5" fill="'+C.gray+'"/><rect x="4" y="10.5" width="5.5" height="5.5" fill="'+C.gray+'"/><rect x="10.5" y="10.5" width="5.5" height="5.5" fill="'+C.gray+'"/>',
+    gt18:'<rect x="5" y="5" width="10" height="10" fill="none" stroke="'+C.gray+'" stroke-width="1.6" stroke-dasharray="2.5 2"/><text x="10" y="13" text-anchor="middle" font-size="7" fill="'+C.gray+'">Ctrl</text>',
+  };
+  const legend = document.getElementById('legendGrid');
+  TYPES.forEach(t=>{
+    const d = document.createElement('div');
+    d.className = 'lg'; d.dataset.id = t.id;
+    d.innerHTML = `<svg class="dot" viewBox="0 0 20 20">${shapes[t.id]||''}</svg>`;
+    d.appendChild(document.createTextNode(t.name));
+    d.addEventListener('click', ()=>switchScene(t.id));
+    legend.appendChild(d);
+  });
+  // 状态条
+  const bar = document.getElementById('stateBar');
+  const stIcons = {
+    normal:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="'+C.blue+'"/>',
+    hover:'<rect x="2.5" y="2.5" width="15" height="15" rx="2" fill="'+C.blue+'" stroke="#fff" stroke-width="2"/>',
+    active:'<rect x="3" y="3" width="14" height="14" rx="2" fill="'+C.blueDeep+'" stroke="#fff" stroke-width="2.6"/><text x="10" y="16" text-anchor="middle" font-size="9" fill="#fff" font-family="Consolas">25</text>',
+    locked:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="'+C.gray+'"/>',
+    disabled:'<rect x="4" y="4" width="12" height="12" rx="1.5" fill="'+C.gray+'" opacity=".3"/><line x1="5" y1="15" x2="15" y2="5" stroke="#C2453A" stroke-width="2"/>',
+  };
+  STATES.forEach(s=>{
+    const d = document.createElement('div');
+    d.className = 'st';
+    d.innerHTML = `<svg width="34" height="34" viewBox="0 0 20 20">${stIcons[s.id]}</svg><div class="lbl">${s.label}</div><div class="desc">${s.desc}</div>`;
+    bar.appendChild(d);
+  });
+  // 补覆盖对象数到 TYPES（从 V6 方案表）
+  const cover = {'gt01':104,'gt02':19,'gt03':12,'gt04':2,'gt05':131,'gt06':182,'gt07':87,'gt08':25,'gt09':21,'gt10':56,'gt11':72,'gt12':44,'gt13':34,'gt14':14,'gt15':6,'gt16':10,'gt17':15,'gt18':22};
+  TYPES.forEach(t=>{ t.cover = cover[t.id]; });
+  switchScene('gt01');
+})();
+</script>
+</body>
+</html>
