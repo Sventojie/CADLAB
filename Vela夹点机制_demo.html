@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vela · 夹点机制交互演示系统 V4.1</title>
+<meta name="description" content="Vela BIM二三维一体化设计平台夹点机制六模块交互演示。单文件、离线可用、支持Notion嵌入。"/>
+<style>
+:root{--navy:#162333;--navy2:#1f3043;--blue:#3479d4;--light:#f2f5f9;--line:#dce3eb;--ink:#243449;--muted:#718196;--cold:#003EFF;--warm:#0EFF0C;--hot:#FF0000}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#e6ebf1;color:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC","PingFang SC",Arial,sans-serif;font-size:13px}button,select,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #8eb9f5;outline-offset:2px}#app{height:100vh;min-height:570px;display:flex;flex-direction:column;overflow:hidden}
+.top{height:48px;flex:none;background:var(--navy);color:#f8fafc;display:flex;align-items:center;padding:0 16px;gap:17px}.mark{width:28px;height:28px;border-radius:5px;background:#2d7bd3;display:grid;place-items:center}.mark svg{width:20px;height:20px}.brand{font-size:18px;font-weight:750;letter-spacing:.4px}.top .separate{height:23px;width:1px;background:#344457}.crumb{color:#adbbcb;font-size:12px;white-space:nowrap}.crumb b{color:#e8edf2;font-weight:600}.fill{flex:1}.topBtn{border:0;background:transparent;color:#c2cdd9;padding:7px 9px;border-radius:4px}.topBtn:hover{background:#34485c;color:#fff}.topTag{background:#243950;border:1px solid #3c536e;color:#cbddee;padding:6px 10px;border-radius:4px;font-size:11px}
+.ribbon{height:73px;flex:none;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:stretch;gap:0;padding:0 15px}.ribTab{padding:0 17px;border:0;background:transparent;color:#66778a;position:relative;font-weight:550}.ribTab.active{color:#246dca;background:#f2f7ff}.ribTab.active:after{content:'';position:absolute;height:2px;left:0;right:0;bottom:0;background:#2774d0}.ribSub{display:flex;align-items:center;gap:4px;border-left:1px solid #e4e8ed;margin:9px 0;padding-left:15px}.rTool{border:1px solid transparent;background:transparent;color:#617389;border-radius:5px;min-width:58px;padding:5px 6px;display:flex;align-items:center;gap:5px;flex-direction:column;font-size:11px}.rTool:hover{background:#eef5ff;border-color:#cadff7;color:#226fc8}.rTool.active{background:#e7f1ff;border-color:#a8c9f2;color:#2664ad}.rTool svg{width:22px;height:22px}.ribbon .rHint{align-self:center;color:#8291a0;font-size:11px;margin-left:auto;padding-right:4px;white-space:nowrap}
+.layout{min-height:0;flex:1;overflow:hidden;display:grid;grid-template-rows:minmax(0,1fr);grid-template-columns:182px minmax(470px,1fr) 294px}.nav{border-right:1px solid #d6dee8;background:#f9fbfd;overflow:auto}.navHead{padding:16px 14px 12px;border-bottom:1px solid #e2e8ef}.navHead strong{font-size:13px}.navHead small{display:block;color:#8997a8;margin-top:6px;font-size:10px}.navGroup{font-size:10px;letter-spacing:1px;color:#97a5b4;margin:16px 13px 8px}.moduleBtn{display:flex;width:calc(100% - 12px);margin:3px 6px;padding:10px 7px;border:1px solid transparent;background:transparent;text-align:left;border-radius:6px;gap:9px;color:#546579;align-items:flex-start}.moduleBtn:hover{background:#eff4fb}.moduleBtn.active{background:#e8f2ff;border-color:#bfd8f8;color:#205eab}.modNum{font-size:11px;font-weight:700;color:#8b9aac;background:#f1f4f7;padding:4px;border-radius:4px;min-width:25px;text-align:center}.moduleBtn.active .modNum{background:#d4e7ff;color:#246ac4}.modText{min-width:0;display:flex;flex-direction:column;gap:3px}.modText b{font-size:11px;line-height:1.45;font-weight:650}.modText small{font-size:10px;line-height:1.4;color:#9aa8b6}.navDivider{border-top:1px solid #e4e9ee;margin:13px 12px}.navFooter{padding:7px 14px;color:#92a0ae;font-size:10px;line-height:1.8}
+.main{min-width:0;display:flex;flex-direction:column;background:#f0f3f7}.moduleTop{height:52px;flex:none;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 14px;gap:9px}.moduleDot{display:inline-block;background:#e7f1ff;color:#2771c3;border:1px solid #c5dcf8;font-size:10px;padding:4px 7px;border-radius:3px;white-space:nowrap}.moduleTitle{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.moduleTop .small{font-size:11px;color:#8793a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.iconbtn{border:1px solid #d7e0ea;background:#fff;color:#57718a;border-radius:4px;padding:6px 9px;white-space:nowrap;font-size:11px}.iconbtn:hover{background:#f1f6fd}.iconbtn.accent{border-color:#8eb9ec;color:#2369b9;background:#eaf3ff}
+.scenes{height:48px;flex:none;display:flex;gap:5px;align-items:center;padding:7px 12px;background:#f9fbfe;border-bottom:1px solid #dce5ee;overflow-x:auto;scrollbar-width:thin}.sceneChip{flex:none;white-space:nowrap;border:1px solid #dce3eb;background:white;color:#687b90;padding:8px 10px;border-radius:5px;font-size:11px}.sceneChip.active{background:#e6f0ff;border-color:#8db7ef;color:#2069bd;font-weight:700}.sceneChip:hover{border-color:#8db7ef}
+.viewBar{height:38px;flex:none;background:#fff;border-bottom:1px solid #d9e2eb;display:flex;align-items:center;justify-content:space-between;padding:0 13px;gap:9px}.viewLeft{display:flex;align-items:center;gap:5px}.envBtn{border:1px solid transparent;background:transparent;border-radius:3px;padding:6px 11px;font-size:11px;color:#6a7c90}.envBtn.active{background:#e9f2fd;color:#246dc3;border-color:#c4dcf7;font-weight:700}.viewRight{display:flex;align-items:center;gap:8px;font-size:11px;color:#6d7d8f}.viewRight select{border:1px solid #d7e0e9;background:#fff;border-radius:4px;color:#4a6079;font-size:11px;padding:5px}.workspace{position:relative;min-height:0;flex:1;overflow:hidden;background-color:#f0f3f7;background-image:linear-gradient(#e3e8ee 1px,transparent 1px),linear-gradient(90deg,#e3e8ee 1px,transparent 1px);background-size:22px 22px;cursor:default}.workspace svg#canvas{width:100%;height:100%;display:block;outline:none;touch-action:none}.stageBadge{position:absolute;top:12px;left:13px;padding:8px 10px;border:1px solid #d3dfe9;background:rgba(255,255,255,.94);border-radius:5px;pointer-events:none;box-shadow:0 1px 3px #31496312;color:#465d75;font-size:11px;line-height:1.55}.stageBadge strong{display:block;color:#253e59;font-size:12px;margin-bottom:2px}.stageTools{position:absolute;right:13px;top:12px;display:flex;gap:4px;background:#fff;border:1px solid #d4dfe9;padding:5px;border-radius:6px;box-shadow:0 1px 3px #31496312}.stageTools button{width:29px;height:28px;border:0;background:#fff;color:#66809a;border-radius:3px}.stageTools button:hover{background:#edf4fe;color:#246cc0}.stageTools button.active{background:#e8f2ff;color:#226bc0}.canvasLegend{position:absolute;left:13px;bottom:15px;display:flex;flex-wrap:wrap;gap:5px;pointer-events:none}.canvasLegend span{background:#ffffffde;border:1px solid #d5dfe9;border-radius:3px;padding:5px 8px;color:#627589;font-size:10px}.canvasLegend strong{color:#306dbb}.hoverInfo{position:absolute;z-index:11;pointer-events:none;background:#fff;border:1px solid #b1cbe8;box-shadow:0 4px 12px #1d3e5c1b;border-radius:4px;padding:7px 9px;font-size:11px;color:#38536c;max-width:230px;white-space:nowrap}.hoverInfo[hidden]{display:none!important}.obj.hoverObject{filter:drop-shadow(0 0 5px #6eabd4)}.statusToast{position:absolute;top:62px;left:50%;transform:translateX(-50%);min-width:240px;max-width:calc(100% - 30px);z-index:5;background:#fff;border:1px solid #a8caed;box-shadow:0 6px 25px #142b4430;padding:10px 12px;border-radius:6px;font-size:12px;color:#345b84;text-align:center;pointer-events:none}.toastWarn{color:#8a5a21;border-color:#e7c48d;background:#fffaf1}.canvasMenu{position:absolute;z-index:12;min-width:148px;padding:4px;background:white;border:1px solid #b8cbe0;border-radius:6px;box-shadow:0 7px 30px #1b38542e;display:none}.canvasMenu.show{display:block}.canvasMenuHead{font-size:10px;color:#91a1b2;padding:6px 9px 7px;border-bottom:1px solid #edf0f3}.canvasMenu button{display:block;width:100%;border:0;background:white;text-align:left;padding:8px 10px;border-radius:4px;font-size:12px;color:#435970}.canvasMenu button:hover,.canvasMenu button:focus{background:#e9f3ff;color:#2469b7}
+.guide{background:#fff;border-left:1px solid #d7e1eb;display:flex;flex-direction:column;min-height:0}.guideHead{height:52px;flex:none;border-bottom:1px solid #e4e8ed;display:flex;align-items:center;justify-content:space-between;padding:0 15px}.guideHead b{font-size:13px}.guideHead span{font-size:10px;color:#9ba8b5}.guideScroll{overflow:auto;min-height:0;flex:1;padding:14px}.eyebrow{font-size:10px;font-weight:700;color:#2c74c2;margin-bottom:5px}.guideTitle{font-size:17px;font-weight:750;margin:0 0 8px;line-height:1.4}.guideDesc{font-size:12px;color:#6e7e90;line-height:1.7;margin:0 0 12px}.ruleBox{background:#f4f7fb;border-left:3px solid #6c9bd7;border-radius:0 5px 5px 0;padding:11px 12px;font-size:11px;color:#51677c;line-height:1.7}.ruleBox strong{display:block;font-size:10px;color:#306db6;margin-bottom:3px}.gLabel{font-size:11px;color:#60758b;font-weight:750;margin:17px 0 8px;display:flex;justify-content:space-between}.gLabel span{color:#a6b0bb;font-weight:400;font-size:10px}.ctrl{display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:36px;padding:2px 0}.ctrl label{font-size:11px;color:#51647a;max-width:108px}.ctrl select{border:1px solid #cddce9;border-radius:5px;background:#fff;padding:7px 5px;color:#3c536b;font-size:11px;max-width:160px;width:144px}.ctrl input[type=checkbox]{width:15px;height:15px;accent-color:#2f75c7}.ctrl button{border:1px solid #bfd5eb;background:#f5f9ff;border-radius:4px;padding:6px 8px;color:#2d6eaf;font-size:11px}.hintBox{background:#fff8ec;border:1px solid #eedbb6;color:#7f5b27;padding:10px 11px;border-radius:6px;font-size:11px;line-height:1.7}.stepItem{display:flex;align-items:flex-start;gap:9px;padding:7px 0;color:#8290a0;font-size:11px;line-height:1.5}.stepN{border:1px solid #d7e1eb;background:#fff;min-width:20px;height:20px;display:grid;place-items:center;border-radius:50%;font-size:10px;color:#8a9ba9}.stepItem.active{color:#2c5e9b;font-weight:650}.stepItem.active .stepN{color:white;background:#3c85d3;border-color:#3c85d3}.stepItem.done{color:#3e8a59}.stepItem.done .stepN{border-color:#75be8d;color:#3d9760}.resultBox{background:#f0f8f2;border:1px solid #cde5d3;border-radius:6px;padding:10px 11px;color:#386b48;font-size:11px;line-height:1.75;min-height:56px}.resultBox strong{display:block;margin-bottom:3px;color:#2d7048}.guideFooter{flex:none;border-top:1px solid #e0e7ee;display:flex;gap:7px;padding:12px;background:#f9fbfd}.guideFooter button{flex:1;border:1px solid #c5d7e9;border-radius:5px;background:white;color:#526c87;font-size:11px;padding:11px 5px;font-weight:700}.guideFooter button.primary{background:#3078d1;border-color:#3078d1;color:#fff}.guideFooter button:hover{filter:brightness(.97)}.footer{height:27px;flex:none;background:#fff;border-top:1px solid #dce3ed;display:flex;align-items:center;padding:0 12px;justify-content:space-between;color:#8190a0;font-size:10px}.footer .good:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#60bb75;margin-right:6px}
+.obj{cursor:pointer}.obj .selectedOutline{stroke:#2f81da;stroke-width:4;stroke-dasharray:0;opacity:.75;fill:none;pointer-events:none}.obj .emphasis{stroke:#3f9eea;stroke-width:16;opacity:.15;fill:none;pointer-events:none}.g{cursor:crosshair;outline:none}.g .glyph{pointer-events:all}.g .halo{fill:transparent;stroke:none;pointer-events:all}.g.disabled{cursor:not-allowed}.g .pulse{opacity:0;fill:none;stroke:#3984d9;stroke-width:2;pointer-events:none}.g.pulsing .pulse{animation:gpulse 1.1s infinite ease-out}@keyframes gpulse{from{opacity:.8;stroke-width:3;transform:scale(.7)}to{opacity:0;stroke-width:1;transform:scale(2)}}.gripTag{pointer-events:none}.gripTag rect{fill:#fff;stroke:#b9cde3}.gripTag text{fill:#315a83;font-size:11px}.labelSvg{font-size:15px;fill:#667b8c;user-select:none}.modelLabel{font-size:13px;fill:#8999ab;pointer-events:none}.refDash{stroke:#b1c0cf;stroke-width:1.4;stroke-dasharray:8 8;fill:none}.preview{fill:none;stroke:#308ae7;stroke-width:4;stroke-dasharray:9 6;pointer-events:none}.anchor{fill:#fff;stroke:#93afcf;stroke-width:1.2}.focusRing{fill:none;stroke:#508adb;stroke-width:2;stroke-dasharray:4 3;pointer-events:none}
+.gallery{position:fixed;inset:0;z-index:55;background:#172b42a8;display:none;align-items:center;justify-content:center;padding:24px}.gallery.open{display:flex}.galleryBox{background:#fff;border-radius:10px;width:min(1050px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 70px #0c203855}.galleryHd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #dfe6ef}.galleryHd b{font-size:17px}.galleryHd small{color:#8191a3;font-size:11px}.galleryHd button{border:0;background:transparent;font-size:24px;color:#8794a4}.galleryFilter{padding:12px 20px;display:flex;align-items:center;gap:8px;background:#f7f9fc}.galleryFilter button{border:1px solid #d2deeb;background:#fff;border-radius:4px;padding:7px 13px;color:#60748a;font-size:11px}.galleryFilter button.active{background:#e7f2ff;border-color:#9ac1ef;color:#246ebc}.galleryGrid{padding:18px;overflow:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.galleryCard{min-height:126px;border:1px solid #dce5ee;background:#fff;border-radius:7px;display:flex;align-items:center;flex-direction:column;gap:7px;padding:10px 8px;text-align:center}.galleryCard:hover{background:#f6faff;border-color:#a6c9ef}.galleryCard svg{height:54px;width:80px}.galleryCard strong{font-size:11px}.galleryCard small{color:#8193a5;font-size:10px}.galleryFoot{padding:12px 22px;background:#f7f9fc;border-top:1px solid #e0e7ef;color:#718397;font-size:11px}
+#app.focusMode .ribbon{display:none}#app.focusMode .layout{grid-template-columns:0 minmax(0,1fr) 0}#app.focusMode .nav,#app.focusMode .guide{display:none}#app.focusMode .main{min-width:0}
+@media(max-width:1300px){.layout{grid-template-columns:150px minmax(400px,1fr) 275px}.moduleBtn{padding:8px 5px;gap:5px}.ribbon .rHint{display:none}.ribTab{padding:0 11px}.rTool{min-width:50px}.navHead{padding:13px 9px}.guideScroll{padding:12px}.moduleTop .small{display:none}}
+@media(max-width:1050px){.layout{grid-template-columns:54px minmax(0,1fr) 270px}.navHead,.navGroup,.navFooter,.navDivider,.modText{display:none}.moduleBtn{justify-content:center;margin:5px 4px;padding:8px 0}.modNum{font-size:11px}.ribbon{padding:0 5px}.ribTab{padding:0 7px}.rTool{min-width:45px}.moduleTop{padding:0 8px}.galleryGrid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:750px){.layout{grid-template-columns:42px minmax(0,1fr)}.guide{position:absolute;z-index:20;right:0;top:121px;bottom:27px;width:265px;box-shadow:-3px 0 20px #1a335015}.main{padding-right:0}.rTool{display:none}.galleryGrid{grid-template-columns:repeat(3,1fr)}}
+
+.lessonBanner{position:absolute;top:13px;left:50%;transform:translateX(-50%);max-width:60%;min-width:380px;background:#fffefaed;border:1px solid #d5deea;box-shadow:0 4px 16px #24445e17;border-radius:7px;padding:8px 13px;pointer-events:none;text-align:center;z-index:3}.lessonBanner b{color:#1b497d;font-size:12px}.lessonBanner small{display:block;margin-top:3px;color:#52657b;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stepItem{font-size:12px;padding:9px 0}.stepN{min-width:23px;height:23px}.guideTitle{font-size:18px}.stageBadge{z-index:2}
+@media(max-width:1250px){.lessonBanner{min-width:230px;max-width:48%}.lessonBanner small{white-space:normal}}
+
+.guideScroll>.hintBox{margin-top:6px;background:#eff6ff;border-color:#c9def6;color:#315d89;font-size:12px;line-height:1.75;padding:12px 11px}
+.guideScroll>.gLabel{margin-top:14px;margin-bottom:7px}.guideScroll #guideSteps{background:#fbfcfe;border:1px solid #e7edf4;border-radius:7px;padding:7px 10px}.guideScroll .stepItem:last-child{border-bottom:0}.guideScroll .stepItem{border-bottom:1px solid #edf1f6}
+.ruleDetail{margin:16px 0 12px;border:1px solid #dde7f1;border-radius:7px;padding:10px;color:#586e83}.ruleDetail summary{cursor:pointer;font-size:12px;font-weight:650}.ruleDetail .guideDesc{margin-top:10px}.ruleDetail .ruleBox{margin-top:8px}
+#guideTitle{font-size:17px;margin:0 0 8px}.resultBox{background:#f3fbf5}
+
+/* V4 integrated five-stage scene: one geometry model, five interaction levels */
+#app{user-select:none;-webkit-user-select:none}
+#guideSteps .stepItem.unifiedStep {cursor:pointer;border-radius:6px;padding:10px 7px;transition:background .15s;} 
+#guideSteps .stepItem.unifiedStep:hover{background:#edf5ff}
+#guideSteps .stepItem.unifiedStep.active{background:#eaf3ff;box-shadow:inset 3px 0 #2d77d4}
+.unifiedControl{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.unifiedControl button{background:#f6faff;border:1px solid #c3d8ef;border-radius:5px;padding:7px 9px;font-size:11px;color:#305e96;flex:1}
+.unifiedControl button.current{background:#2c74c5;border-color:#2c74c5;color:#fff}
+.unifiedChoice{border:1px solid #d5e2ef;border-radius:7px;padding:10px;background:#f8fbff;margin-top:9px;font-size:11px;line-height:1.6}
+.unifiedChoice b{display:block;color:#255f9c;margin-bottom:4px}
+.unifiedMiniStat{background:#eaf5ee;border:1px solid #cce5d5;padding:8px;border-radius:5px;font-size:11px;margin:8px 0;color:#30654a}
+#canvas .unifiedHit{cursor:pointer;pointer-events:all}
+#canvas .unifiedGrip{cursor:pointer}
+#canvas .unifiedGrip .gripTarget{fill:transparent;stroke:none;pointer-events:all}
+#canvas .unifiedGrip .uSelected{fill:none;stroke:#8e61bd;stroke-width:2.7;stroke-dasharray:4 3;pointer-events:none}
+#canvas .uBadge rect{fill:#fff;stroke:#b3cce7;stroke-width:1.5}
+#canvas .uBadge text{fill:#2d5e90;font-weight:700;font-size:14px}
+#canvas .uEmphasis{filter:drop-shadow(0 0 5px #eab46d)}
+#canvas .uOverlayLabel{fill:#395d80;font-size:13px;font-weight:650;pointer-events:none}
+#canvas .uObjBack{pointer-events:none}
+#canvas .uObjPick{pointer-events:all;cursor:pointer}
+#canvas .uSketchZone{fill:#fffdf7;stroke:#ddc7a3;stroke-width:1.5;stroke-dasharray:9 5}
+
+</style>
+</head>
+<body>
+<div id="app">
+<header class="top"><span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4h18L12 21 3 4Z" stroke="white" stroke-width="2"/><path d="M6 8h12" stroke="white" stroke-width="1.6"/></svg></span><span class="brand">Vela</span><span class="separate"></span><span class="crumb"><b>办公楼改造项目</b> &nbsp;/&nbsp; 首层平面 &nbsp;/&nbsp; 夹点机制演示</span><div class="fill"></div><span class="topTag">机制设计 V1.2 · Demo V4.1</span><button class="topBtn" id="topUndo">↶ 撤销</button><button class="topBtn" id="topReset">⟲ 重置</button></header>
+<div class="ribbon"><button class="ribTab active">建筑</button><button class="ribTab">结构</button><button class="ribTab">给排水</button><button class="ribTab">暖通</button><button class="ribTab">电气</button><button class="ribTab">草图</button><div class="ribSub">
+<button class="rTool active" id="rSelect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3v17l5-5 3 6 3-1-3-6 7-2L5 3Z"/></svg>选择</button><button class="rTool" id="rMove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M2 12h20M12 2l-3 4m3-4 3 4M12 22l-3-4m3 4 3-4M2 12l4-3m-4 3 4 3m16-3-4-3m4 3-4 3"/></svg>移动</button><button class="rTool" id="rLine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20L20 4"/><circle cx="4" cy="20" r="2"/><circle cx="20" cy="4" r="2"/></svg>直线</button><button class="rTool" id="rGallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><circle cx="17" cy="6.5" r="3.5"/><path d="M7 14l-4 7h8l-4-7Z"/><rect x="14" y="14" width="7" height="7"/></svg>夹点图鉴</button>
+</div><div class="rHint">按住 Shift 加选（草图） · Tab 候选切换 · Esc 取消</div></div>
+<div class="layout"><aside class="nav"><div class="navHead"><strong>机制演示目录</strong><small>统一工作界面 · 六个模块</small></div><div class="navGroup">演示模块</div><div id="moduleNav"></div><div class="navDivider"></div><div class="navFooter">章节索引：4.1 ～ 4.5<br/>原型演示，不连接BIM内核</div></aside>
+<main class="main"><div class="moduleTop"><span class="moduleDot" id="modNum">模块 01</span><span class="moduleTitle" id="modTitle">夹点生成、显示与样式</span><span class="small" id="modSub">对象能力、环境与显示规则</span><div class="fill"></div><button class="iconbtn" id="openGallery">▦ 30种样式</button><button class="iconbtn accent" id="focusBtn">⛶ 放大画布</button></div>
+<div class="scenes" id="sceneTabs"></div>
+<div class="viewBar"><div class="viewLeft"><span style="color:#7d8ea0;font-size:11px;margin-right:5px">编辑环境</span><button class="envBtn active" data-env="project">项目环境</button><button class="envBtn" data-env="element">构件编辑</button><button class="envBtn" data-env="sketch">草图环境</button></div><div class="viewRight"><span>视图</span><select id="viewSelect"><option value="plan">首层平面</option><option value="elevation">立面</option><option value="3d">三维示意</option></select></div></div>
+<div class="workspace" id="workspace"><svg id="canvas" viewBox="0 0 1100 690" preserveAspectRatio="xMidYMid meet" tabindex="0" aria-label="Vela绘图画布，选择模型对象，单击夹点，使用Tab或Shift操作"></svg><div class="lessonBanner" id="lessonBanner"><b id="lessonHeadline">选中对象 → 找到夹点</b><small id="lessonSub">观察冷态、温态与热态区别</small></div><div class="stageBadge"><strong id="stageTitle">首层平面</strong><span id="stageSubtitle">模型空间 · 选中对象显示夹点</span></div><div class="stageTools"><button id="fitBtn" title="适应窗口">⊞</button><button id="viewGrid" title="网格显示">▦</button><button id="smallGallery" title="查看夹点样式图鉴">◫</button></div><div id="canvasMenu" class="canvasMenu"></div><div id="hoverInfo" class="hoverInfo" hidden></div><div id="statusToast" class="statusToast" hidden></div><div class="canvasLegend" id="canvasLegend"><span>当前环境：<strong>项目环境</strong></span><span>单击对象 → 显示夹点</span></div></div>
+</main>
+<aside class="guide"><div class="guideHead"><b>交互规则导览</b><span id="guideVersion">机制 · V1.2 / Demo V4.1</span></div><div class="guideScroll">
+<div class="eyebrow" id="guideCode">4.1.2 / T1—T3</div>
+<h2 class="guideTitle" id="guideTitle">生成条件</h2>
+<div class="hintBox" id="guideHint"></div>
+<div class="gLabel">按这四步操作 <span>可以点击或自动演示</span></div>
+<div id="guideSteps"></div>
+<div class="gLabel">画面反馈</div>
+<div class="resultBox"><strong>● 当前结果</strong><span id="resultMsg"></span></div>
+<div class="gLabel">场景控制 <span>参数可切换</span></div>
+<div id="sceneControls"></div>
+<details class="ruleDetail"><summary>展开机制说明与章节依据</summary><p class="guideDesc" id="guideDesc"></p><div class="ruleBox"><strong>机制对应条款</strong><span id="guideRule"></span></div></details>
+</div><div class="guideFooter"><button id="resetScene">⟲ 重置</button><button class="primary" id="autoDemo">▶ 自动演示</button></div></aside></div>
+<footer class="footer"><span class="good">就绪 · Vela夹点机制交互原型</span><span id="footerRight">项目环境 | 1:100 | 单位：mm | 对象捕捉 ON</span></footer>
+</div>
+<div id="gallery" class="gallery"><div class="galleryBox"><div class="galleryHd"><div><b>Vela 夹点样式图鉴</b><br/><small>依据现有Excel的30种夹点名称、主要外形及适用环境</small></div><button id="galleryClose" aria-label="关闭">×</button></div><div class="galleryFilter"><button data-gallery-env="all" class="active">全部30种</button><button data-gallery-env="project">项目环境</button><button data-gallery-env="element">构件编辑</button><button data-gallery-env="sketch">草图环境</button><span style="margin-left:auto;color:#8394a7;font-size:11px" id="galleryInfo">按当前环境显示适用样式</span></div><div style="display:flex;gap:8px;align-items:center;padding:0 20px 10px;background:#f7f9fc;font-size:11px;color:#6b7d8e">状态预览：<button data-gstate="cold" class="iconbtn accent">冷态</button><button data-gstate="warm" class="iconbtn">温态</button><button data-gstate="hot" class="iconbtn">热态</button></div><div class="galleryGrid" id="galleryGrid"></div><div class="galleryFoot">草图环境下：几何拉伸节点统一为空心圆；二维整体移动夹点与多段线段中点夹点仍采用空心扁矩形。项目环境与构件编辑环境中，专业对象保持各自实心拉伸造型。冷态蓝色、温态绿色、热态红色。30种图形为交互原型示意，最终以正式UI规范为准。</div></div></div>
+<script>
+'use strict';
+const MODS=[
+{id:'display',label:'生成、显示与样式',sub:'4.1.1—4.1.2 / 4.2',short:'生成与样式',scenes:[
+{id:'cap',name:'生成条件',title:'对象具备能力，才生成夹点',rule:'4.1.1、4.1.2（1）／G1、T1—T3',desc:'对象被选中后，按对象能力、当前编辑环境、视图及选择层级确定夹点集合。没有对应能力时不生成夹点。',hint:'先单击图中的对象；再关闭“开放夹点能力”，比较有无夹点。',steps:['单击对象，使其进入选中状态','观察夹点的位置和类型','关闭“开放夹点能力”，确认夹点消失'],env:'project',obj:'wall',selected:[],result:'尚未选中对象；对象夹点不会自行出现。'},
+{id:'environment',name:'三种编辑环境',title:'同一对象，不同环境显示不同夹点',rule:'4.1.2（1）（4）、4.2.2（4）／T1、T7',desc:'同一专业对象的拉伸节点在项目环境与构件编辑环境保持相同造型、相同实心填充；进入草图后转为轮廓线，所有几何拉伸节点统一为空心圆形，草图中顶点拉伸采用空心圆；仅将轮廓定义为多段线时，才在各线段中点提供扁矩形多功能夹点。',hint:'先选择建筑墙，再依次点击顶部“项目环境→构件编辑→草图环境”。对比：前两种三角拉伸节点不变，草图轮廓端点为空心圆；多段线线段中点可另有扁矩形拉伸，二维线段中点扁矩形则执行整体移动。再换结构梁或机电管线验证。',steps:['选中对象','切换项目环境与构件编辑环境','切换草图环境，观察空心轮廓'],env:'project',obj:'wall',selected:['W-017'],result:'项目环境：呈现对象实例当前开放的编辑入口。'},
+{id:'position',name:'位置与方向',title:'夹点位置对应实际编辑目标',rule:'4.1.2（2）／T2、T3',desc:'端点控制几何端点，三角控制方向尺寸，移动夹点作用于整体。具有方向性的符号与当前操作方向一致。',hint:'切换演示对象（直线、墙体、参数化构件、视图框、MEP），观察夹点形状与实际控制位置。',steps:['选中当前对象','切换对象类型','识别不同夹点对应的编辑目标'],env:'project',obj:'family',selected:['F-206'],result:'形体三角夹点对应尺寸控制，移动入口独立表达。'},
+{id:'view',name:'视图与选择层级',title:'视图和选择层级决定能否显示',rule:'4.1.2（1）（4）／T2、T3',desc:'夹点必须能在当前视图中呈现可识别的位置和操作方向；未开放的子对象级入口不会出现在对象级选择状态下。',hint:'切换“首层平面／立面／三维”，然后改变选择层级，观察当前有效控制件。',steps:['选中参数化对象','切换视图方向','切换整体／子对象选择层级'],env:'element',obj:'family',selected:['F-206'],result:'当前视图中仅显示能够确定位置及操作方向的夹点。'},
+{id:'restrictions',name:'显示限制',title:'区分隐藏、禁用与目标校验',rule:'4.1.2（3）／T9、J8',desc:'没有能力或视图不允许时不显示；固定、只读可保留禁用反馈；尺寸约束不直接隐藏夹点，操作目标确认后才校验。',hint:'切换“正常／位置固定／只读／尺寸约束”，单击夹点验证差异。',steps:['选中对象并观察冷态夹点','设置固定或只读，观察禁用反馈','设置尺寸约束，观察夹点仍显示'],env:'project',obj:'wall',selected:['W-017'],result:'正常：对象夹点可显示和激活。'},
+{id:'sketchmove',name:'二维图元移动夹点',title:'二维图元：扁矩形整体移动',rule:'4.1.2（2）、4.1.11、4.2.2／P1、T3',desc:'二维基础图元统一使用扁矩形P1移动夹点：独立直线取中点、圆取圆心、独立矩形和三角形取内部中心。多段线另在各线段中点显示S1拉伸用扁矩形；该多功能中点规则不自动套用于独立矩形、三角形或圆。草图端点仍使用空心圆。体对象在项目/构件编辑环境的整体移动使用四向移动符号。',hint:'使用右侧“二维几何类型”切换线段、圆、矩形和三角形。单击中点或中心的扁矩形→松开鼠标→移动→再单击，核对对象是否整体平移。',steps:['选中二维图元并找到扁矩形移动夹点','单击空心扁矩形移动夹点进入热态','松开鼠标、移动指定新位置','第二次单击确认：整个图形平移'],env:'sketch',obj:'line',selected:['L-018'],result:'二维独立直线：端点空心圆S1；线段中点空心扁矩形P1整体移动。'},
+{id:'professiongrips',name:'专业拉伸造型',title:'专业对象分别使用专属拉伸节点',rule:'4.2.1、4.2.2／S1、T3、T7',desc:'专业构件在项目环境与构件编辑环境采用同一款实心拉伸节点：建筑/形体=三角、结构=方块、机电=管形圆环、场地=笔形。进入草图编辑后，顶点的几何拉伸统一改为空心圆；独立轮廓线段中点使用空心扁矩形P1移动；只有多段线段中点具备专门的多功能拉伸夹点。体对象整体移动使用四向箭头，不使用扁矩形。',hint:'依次选择建筑墙、结构梁、机电管线、场地边界；在项目环境与构件编辑环境分别比较同一专业的实心拉伸符号，最后切换草图，核对拉伸均为空心圆形。',steps:['项目：选择专业构件，观察专属实心拉伸符号','切换构件编辑：造型和实心填充保持不变','切换草图：空心圆端点拉伸、扁矩形线段中点移动（多段线中点有专门拉伸行为）','单击夹点，松开鼠标后预览并确认'],env:'project',obj:'wall',selected:['W-017'],result:'项目环境：建筑墙显示三角形S1拉伸；其他专业对象采用独立造型。'},
+{id:'gallery',name:'30种样式图鉴',title:'沿用Excel的30种夹点类型',rule:'4.2.1、4.2.2／T7',desc:'夹点图鉴按基础类型与环境变体展示。项目/构件环境优先展示原型造型；草图环境对几何拉伸节点统一转换为空心圆，但二维整体移动与多段线中点仍保持扁矩形。',hint:'点击“打开30种样式图鉴”，按环境过滤，核对名称、基础形状、草图变体和冷／温／热色。',steps:['打开夹点样式图鉴','分别筛选项目、构件、草图环境','核对基础形状与草图变体是否一致'],env:'sketch',obj:'poly',selected:['PL-08'],result:'草图多段线：端点空心圆S1、线段中点扁矩形S1、独立内部扁矩形P1整体移动。'}]},
+{id:'interaction',label:'状态与操作交互',sub:'4.1.3—4.1.4 / 4.2.3',short:'状态与操作',scenes:[
+{id:'states',name:'冷温热三态',title:'冷态、温态和热态分别对应不同交互',rule:'4.1.3／T8',desc:'选中对象产生冷态；鼠标悬停产生温态；单击连续编辑型夹点并释放鼠标才进入热态。颜色只反映交互状态。',hint:'把鼠标移到端点夹点看绿色；单击看红色；松开鼠标移动，第二次单击确认。',steps:['选中对象：冷态蓝色','鼠标悬停：温态绿色','单击并释放：热态红色','移动到目标再单击：提交'],env:'sketch',obj:'line',selected:['L-018'],result:'当前显示冷态；悬停才进入温态。'},
+{id:'continuous',name:'连续编辑型',title:'仅允许CAD热夹点操作流程',rule:'4.1.4（1）、4.1.5／T10、T11',desc:'连续型夹点必须先单击激活并松开鼠标，之后移动指定目标，再次单击或有效数值输入确认。没有按住鼠标拖拽的第二套操作。',hint:'单击端点 → 松开 → 移动鼠标观察虚线预览 → 单击确认；按 Esc 可取消。',steps:['单击夹点激活','释放鼠标并移动确定目标','再次单击确认，或Esc取消'],env:'sketch',obj:'line',selected:['L-018'],result:'几何未修改；单击夹点后才能开始预览。'},
+{id:'single',name:'单击执行型',title:'状态控制件单击即执行',rule:'4.1.4（2）／T8',desc:'翻转、固定/解除固定、2D/3D范围等离散行为不进入热夹点连续几何定位流程。',hint:'点击图中的翻转控制件，观察参数化构件朝向立即改变。',steps:['选中参数化构件','单击翻转夹点','观察方向状态立即更新'],env:'project',obj:'family',selected:['F-206'],result:'构件朝向：正向。'},
+{id:'menu',name:'悬停菜单',title:'多功能夹点悬停菜单绑定当前控制件',rule:'4.2.3／J1、T10',desc:'草图中一个夹点具有两项及以上可选行为时提供悬停菜单。点击菜单中的连续编辑命令，直接进入热态。',hint:'将鼠标悬停在多段线的空心圆形顶点；菜单出现后选择“拉伸”或“顶点编辑”。多段线段中点扁矩形负责S1拉伸，专设内部扁矩形负责P1整体移动。',steps:['悬停空心圆形顶点夹点，等待菜单出现','从菜单选择行为','观察无需再次单击夹点即进入热态'],env:'sketch',obj:'poly',selected:['PL-08'],result:'多段线顶点圆形夹点提供多功能菜单；内部扁矩形负责整体移动。'}]},
+{id:'overlap',label:'重合、共享与键位',sub:'4.1.6—4.1.8 / T4—T6',short:'重合与键位',scenes:[
+{id:'unifiedTab',name:'统一画布 · 五步完整演示',title:'同一组图形，完整演示对象、夹点、重合与Shift选择',rule:'4.1.3、4.1.6—4.1.8 ／ T4、T5、T6、T8、T10、T12',desc:'矩形A、矩形B和三角形C始终位于同一个画布。矩形A的右上顶点与B的左上顶点坐标重合，但没有共同编辑关系。按五个步骤分别验证对象候选、当前对象的夹点、独立重合夹点、目标对象单独编辑以及Shift多夹点共同编辑。L型墙的共享夹点另有独立场景。',hint:'点击右侧五个步骤切换当前操作层级，画布始终使用相同的三个图形。单击画布获取键盘焦点后按Tab；第三步在重合顶点处只切换A/B；第四步单击重合顶点→松开鼠标→移动→再次单击确认；第五步Shift+单击紫色提示位置附近的三个顶点，再单击任一已选端点共同编辑。',steps:['① 对象候选：Tab在矩形A、B及三角形C间切换','② 对象内夹点：选中矩形A，Tab依次高亮A的可选夹点','③ 独立重合夹点：只在A、B重合顶点之间按Tab切换','④ 激活目标夹点：只改变选中的B，A保持不变','⑤ Shift多夹点：在相同画布中选择多个独立顶点并共同编辑'],env:'sketch',obj:'unifiedTab',selected:[],relation:'independent',result:'相同图形贯穿五步；当前为第①步，Tab切换三个候选对象。'},
+
+{id:'wallLshared',name:'L型墙共享端点',title:'L型墙连接：一个共享端点带动两段墙',rule:'4.1.6（1）、4.1.5／T5、T12',desc:'两段建筑墙在L形转角处具有共同编辑关系，且同时被选中。在项目环境显示一个共享三角拉伸夹点；它不是因坐标巧合合并的夹点。单击后松开鼠标，再移动目标，预览两段墙连接端同时移动；确认后一起提交。',hint:'观察L型连接转角的蓝色实心三角；单击共享节点→松开鼠标→移动鼠标查看两墙联动预览→再次单击确认。按Esc可取消；Ctrl+Z可一次撤销两墙。',steps:['选择墙A+墙B：出现一个共享端点','单击共享三角夹点，松开鼠标','移动鼠标：两段L型墙同时跟随预览','再次单击：共同提交；可用Ctrl+Z撤销'],env:'project',obj:'wallL',selected:['W-A','W-B'],relation:'shared',result:'L型墙A+B在转角处具有共同编辑能力，生成一个共享实心三角夹点。'},
+{id:'twostagetab',name:'体对象两级Tab',title:'先Tab找到目标对象，再Tab找到目标夹点',rule:'4.1.2（5）、4.1.6、4.1.8／T6',desc:'两个体对象的投影重合时，未选中对象的Tab切换对象候选；选中目标体后才能显示其夹点。如果同时选中两个体，Tab再在重合拉伸夹点A/B间切换，高亮对象身份、标高和候选序号。',hint:'步骤① 未选中时按Tab → ②点击“选中当前候选” → ③Shift追加另一个体对象 → ④把鼠标停到重合三角位置并按Tab → ⑤单击目标夹点并确认。',steps:['Tab切换体对象A/B（此时没有夹点候选）','选中体A，Shift再加选体B','Tab切换重合的三角拉伸夹点A/B','单击目标夹点并松开，只修改该体'],env:'project',obj:'solidOverlap',selected:[],relation:'independent',result:'第1层Tab：对象候选。选中体对象后，第2层Tab才切换夹点候选。'},
+{id:'mixed',name:'共享与独立共存',title:'共享候选与独立候选可以共存',rule:'4.1.6（3）（4）／T5、T6',desc:'同一位置既允许联合操作又允许分别编辑时，共享夹点排首位，独立对象夹点保留；不重复生成完全等效的候选。',hint:'悬停公共端点，连按 Tab，依次观察“共享 → A → B → 共享”。',steps:['悬停公共端点，观察共享候选','按Tab到A的独立夹点','再次Tab到B的独立夹点'],env:'sketch',obj:'overlap',selected:['A','B'],relation:'mixed',result:'候选顺序：共享端点 → A端点 → B端点。'},
+{id:'disabled',name:'禁用候选',title:'禁用但仍显示的夹点可以Tab访问',rule:'4.1.6（4）—（6）、4.1.12／T6、J8',desc:'禁用夹点参加候选排序，仍可通过Tab查看对象身份和限制原因，但不显示正常温态，也不能激活。',hint:'悬停公共端点，按Tab切换到 B 的禁用夹点，尝试单击它，观察提示。',steps:['悬停公共端点','按Tab切换到禁用候选','单击并观察不可激活反馈'],env:'sketch',obj:'overlap',selected:['A','B'],relation:'independent',disabled:'B',result:'B的端点固定：可被Tab访问，但不可编辑。'},
+{id:'solidmulti',name:'体对象多选边界',title:'对象多选不等于夹点多选',rule:'4.1.6、4.1.7／T4、T5、T6',desc:'项目环境可以Shift多选体对象，也可以Tab切换其重合夹点，但不能Shift自由加选两个独立体夹点共同拉伸。共享编辑必须另有共同编辑能力，不由投影重合自动成立。',hint:'在“对象选择”中只选A、只选B、同时选中A+B；切换候选后按住Shift单击夹点，观察不加入多夹点编辑集合。',steps:['Shift选择两个体对象','确认各自三角控制件正常显示','按Tab切换重合控制件','尝试Shift加选体夹点：被禁止'],env:'project',obj:'solidOverlap',selected:['S-A','S-B'],relation:'independent',result:'项目中对象多选有效，但独立体夹点Shift多选不开放。'}]},
+{id:'multimove',label:'多夹点与整体移动',sub:'4.1.7 / 4.1.11',short:'多夹点与移动',scenes:[
+{id:'shift',name:'草图多选',title:'多个夹点共同接受一次输入',rule:'4.1.7／T4、T12',desc:'仅草图环境开放Shift加选独立夹点。所有选中夹点必须有共同可执行行为及输入方式，提交时统一校验。',hint:'按住Shift点击两条线的外端点，再单击其中一个已选夹点，移动并确认。',steps:['Shift选中两个夹点','单击其中一个进入热态','指定目标并提交全部修改'],env:'sketch',obj:'overlap',selected:['A','B'],relation:'independent',result:'可加选多个独立夹点。'},
+{id:'limit',name:'环境边界',title:'项目与构件环境不支持任意多夹点加选',rule:'4.1.7（4）／T4',desc:'项目环境和构件编辑环境不开放通用Shift多夹点编辑；共享夹点及对象选择集的整体移动仍可以使用。',hint:'将环境从草图切换到项目或构件编辑，按住Shift单击两个夹点；观察不加入夹点集合。',steps:['切换至项目或构件编辑环境','按Shift单击夹点','观察多夹点集合保持为空'],env:'project',obj:'overlap',selected:['A','B'],relation:'independent',result:'项目环境：Shift不开放任意夹点多选。'},
+{id:'move',name:'对象整体移动',title:'P1整体移动与局部拉伸分开',rule:'4.1.11／P1',desc:'整体移动保持对象长度与方向不变；局部端点拉伸则只改目标几何。使用专用移动夹点或对象已开放的移动模式。',hint:'切换到草图环境，单击二维线段中心的小号圆形移动夹点并释放鼠标；移动指针再单击提交，长度和方向保持不变。',steps:['选中二维线段','单击线段中心小号圆形移动夹点','指定目标并确认，整体移动不变形'],env:'sketch',obj:'line',selected:['L-018'],result:'整体移动时，原有几何尺寸和朝向应保持不变。'},
+{id:'objectselection',name:'对象多选与夹点多选',title:'Shift多选对象与Shift多选夹点是两种不同的选择集合',rule:'4.1.6、4.1.7、4.1.8／T4—T6',desc:'Shift单击线身加入/移出对象选择集；草图中，Shift单击端点加入/移出夹点选择集。只有加入的夹点才参与多夹点拉伸；单击扁矩形移动夹点按P1移动相应对象，不改变其他对象。',hint:'先按Shift点击两条线身形成对象多选，再按Shift点击不同端点形成夹点多选；之后单击任一选中端点，按共同位移编辑。',steps:['Shift单击对象本体：对象A+B进入选择集','Shift单击两个端点：各自加入夹点集合','Shift再次单击一个端点：从夹点集合移出','单击已选端点→松开→共同编辑'],env:'sketch',obj:'overlap',selected:['A'],relation:'independent',result:'对象选择集和夹点选择集相互独立。'}]},
+{id:'validation',label:'约束、预览与恢复',sub:'4.1.5 / 4.1.9 / 4.1.12',short:'约束与提交',scenes:[
+{id:'preview',name:'实时预览',title:'预览不是已提交的模型修改',rule:'4.1.5（3）（5）／T11、T12',desc:'热态中鼠标移动只更新预期结果。直到确认并校验通过才保存对象及必要关联更新。',hint:'单击端点，移动鼠标看蓝色虚线预览；按Esc恢复或再次单击提交。',steps:['激活端点进入热态','移动鼠标，观察实时预览','单击确认或按Esc取消'],env:'sketch',obj:'line',selected:['L-018'],result:'对象几何未提交修改。'},
+{id:'size',name:'尺寸约束',title:'尺寸约束不阻止夹点生成',rule:'4.1.5（4）、4.1.9／T9、J4',desc:'有尺寸约束时夹点仍可见。只有用户指定了具体目标后，才校验是否满足尺寸要求；无效目标保持热态。',hint:'单击端点并向右移动超过限制范围，再单击确认，观察限制提示；向近处指定合法位置。',steps:['选中有尺寸约束的线段','激活夹点指定超限目标','观察不提交且保持热态','重新指定合法目标'],env:'sketch',obj:'line',selected:['L-018'],restriction:'size',result:'存在尺寸约束：仍显示可操作夹点。'},
+{id:'host',name:'宿主约束',title:'普通编辑不能隐式解除宿主关系',rule:'4.1.9（2）／J3',desc:'构件基于工作平面或宿主定位时，普通夹点编辑需要保持依附关系。目标超出允许方向或平面时不得提交。',hint:'在构件编辑环境中选择端点，尝试将控制点移动到工作平面允许区域以外。',steps:['选中受工作平面约束的构件','激活并尝试违规位移','观察目标不合法并可重选'],env:'element',obj:'family',selected:['F-206'],restriction:'host',result:'工作平面约束有效；关系不会因普通编辑自动解除。'},
+{id:'rollback',name:'失败与撤销',title:'关联更新全部提交或全部回退',rule:'4.1.5（5）、4.1.12／T12',desc:'主对象与必要关联对象必须作为一次完整修改提交。必要更新失败时整体回退并退出热态；正常完成后支持Ctrl+Z撤销。',hint:'开启“模拟关联提交失败”，执行一次夹点修改；观察回退。关闭模拟后可成功提交，再按Ctrl+Z撤销。',steps:['激活端点并移动','确认并触发模拟提交失败','观察整体回退并退出热态','关闭模拟重试并撤销'],env:'project',obj:'wall',selected:['W-017'],restriction:'fail',result:'已启用提交失败模拟；确认时不会留下部分修改。'}]},
+{id:'professional',label:'视图、参数与专业',sub:'4.1.10 / 4.3 / M1—M3',short:'视图与专业',scenes:[
+{id:'range',name:'2D/3D范围',title:'区分视图级和模型级修改',rule:'4.1.10／M1、Q2.4',desc:'轴网、标高的2D范围只改变当前视图表达；3D范围改变模型基准范围并按规则影响相关视图。',hint:'单击“2D/3D”控制件切换范围，再激活端点修改范围，观察状态说明。',steps:['选中轴网对象','单击2D/3D切换控制件','修改显示范围并观察影响层级'],env:'project',obj:'grid',selected:['G-A'],result:'当前范围：2D，修改只影响当前视图表达。'},
+{id:'instance',name:'参数化构件',title:'实例参数与状态控制分开',rule:'4.3.3、4.1.10／Q1、Q2、J7',desc:'形状操纵柄调整已经开放的实例参数，翻转夹点改变实例朝向；不能无提示修改全部同类型实例。',hint:'选中参数化门窗示意，单击三角尺寸夹点或翻转夹点，比较连续型与单击型操作。',steps:['选中参数化构件','单击三角尺寸夹点，连续定位','单击翻转控制件直接执行'],env:'project',obj:'family',selected:['F-206'],result:'实例参数和方向状态彼此独立。'},
+{id:'mep',name:'机电创建与连接',title:'连接口创建命令与端点编辑区分',rule:'4.3.4、4.4.4／M2、M3',desc:'MEP端点修改需要保持连接有效；连接口创建夹点属于命令入口型，单击进入创建命令，合法后才提交新对象和连接关系。',hint:'点击管道端点的“＋”创建控制，移动鼠标指定新管线端点，再单击确认。',steps:['选中管线，识别管形节点','单击连接口创建夹点','指定新管线目标并确认'],env:'project',obj:'mep',selected:['MEP-31'],result:'设备与管线之间的连接关系保持有效。'}]}
+];
+const GRIP_TYPES=[
+['圆形夹点','circle','project,element,sketch','S1拉伸'],['扁矩形夹点','flat','project,element,sketch','P1二维整体移动／多段线中点S1'],['三角形夹点','triangle','project,element,sketch','S1拉伸 / Q3阵列'],['菱形夹点','diamond','project','E3视图控制'],['环形夹点','ring','project','S1拉伸'],['方形夹点','square','project','S1拉伸'],['笔形夹点','pencil','project','S1拉伸'],
+['十字点夹点','redpoint','sketch','P1点控／辅助定位'],['翻转夹点','flip','project,element','P3翻转'],['循环夹点','cycle','project','P2/Q2'],['旋转夹点','rotate','project','P2旋转'],['移动夹点','move','project','P1移动'],['翻转夹点（平面变体）','flip2','project,element','P3翻转'],['箭形夹点','arrow','project','P3/Q2'],['棋盘夹点','chess','element','P2旋转'],
+['轴网夹点','grid','project','Q2状态切换'],['工作平面夹点','plane','project,element','Q4工作平面'],['参数夹点','param','project,element','Q1参数定位'],['切线夹点','tangent','sketch','Q2状态切换'],['2D夹点','2d','project','Q2.4'],['3D夹点','3d','project','Q2.4'],
+['闪电夹点','bolt','project,element','E4/Q2'],['一字夹点','minus','project','E2创建内容'],['十字夹点','plus','project','E2创建内容'],['点状夹点','dot','project,element,sketch','E3视图控制'],['管道创建夹点','create','project','E2创建内容'],['帽形夹点','hat','project,element','Q2状态切换'],['标注夹点','dimension','project,element,sketch','E1 / L1.1'],['锁形夹点','lock','project,element,sketch','E1 / L1.2'],['图钉夹点','pin','project,element','E1 / L1.2']
+];
+const GALLERY_SHAPE_LABEL={circle:'圆形',flat:'扁矩形',triangle:'三角形',diamond:'菱形',ring:'环形',square:'方形',pencil:'笔形',redpoint:'十字点',flip:'翻转',cycle:'循环',rotate:'旋转',move:'移动',flip2:'翻转',arrow:'箭形',chess:'棋盘',grid:'轴网',plane:'工作平面',param:'参数',tangent:'切线',bolt:'闪电',minus:'一字',plus:'十字',dot:'点状',create:'创建',hat:'帽形',dimension:'标注',lock:'锁形',pin:'图钉','2d':'2D','3d':'3D'};
+const E={app:document.getElementById('app'),canvas:document.getElementById('canvas'),nav:document.getElementById('moduleNav'),sceneTabs:document.getElementById('sceneTabs'),ctrl:document.getElementById('sceneControls'),steps:document.getElementById('guideSteps'),menu:document.getElementById('canvasMenu'),workspace:document.getElementById('workspace'),toast:document.getElementById('statusToast')};
+const q=id=>document.getElementById(id);
+const state={module:0,scene:0,env:'project',view:'plan',selected:[],object:'wall',capability:true,restriction:'none',relation:'independent',selectionLevel:'object',disabled:'',hoverGrip:null,hoverAt:'',candidateIndex:0,objIndex:0,multi:[],hot:null,pointer:null,overrides:{},flip:false,range:'2D',menuOpen:false,menuGrip:null,activeStep:0,result:'',lastTip:'',autoTimers:[],demoPlaying:false,undo:[],redo:[],lastCandidate:[],galleryEnv:'all',galleryState:'cold',gridOn:true,tool:'select',hoveringMenu:false};
+let toastTimer=null, menuTimer=null;
+function curMod(){return MODS[state.module]};function cur(){return curMod().scenes[state.scene]};function envLabel(){return {project:'项目环境',element:'构件编辑环境',sketch:'草图环境'}[state.env]};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function setResult(msg){state.result=msg;q('resultMsg').textContent=msg}
+function toast(msg,warn=false){E.toast.textContent=msg;E.toast.classList.toggle('toastWarn',warn);E.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>E.toast.hidden=true,2400)}
+function clearAuto(){state.autoTimers.forEach(clearTimeout);state.autoTimers=[];state.demoPlaying=false;q('autoDemo').textContent='▶ 自动演示'}
+function setStep(n){state.activeStep=n;E.steps.querySelectorAll('.stepItem').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('done',i<n)})}
+function setScene(mi,si){clearAuto();hideMenu();state.module=mi;state.scene=si;const sc=cur();state.env=sc.env||'project';state.object=sc.obj||'wall';state.view='plan';state.selected=(sc.selected||[]).slice();state.capability=true;state.restriction=sc.restriction||'none';state.relation=sc.relation||'independent';state.selectionLevel='object';state.disabled=sc.disabled||'';state.hoverGrip=null;state.hoverAt='';state.candidateIndex=0;state.objIndex=0;state.multi=[];state.hot=null;state.pointer=null;state.overrides={};state.flip=false;state.range='2D';state.undo=[];state.redo=[];state.result=sc.result||'';state.lastTip='';state.tool='select';state.justCommitted=false;state.unified=null;q('viewSelect').value='plan';window.history.replaceState(null,'','#module='+curMod().id+'&scene='+sc.id);renderAll()}
+function initialHash(){const h=new URLSearchParams(location.hash.replace(/^#/,''));let m=MODS.findIndex(x=>x.id===h.get('module'));if(m<0)m=0;let s=MODS[m].scenes.findIndex(x=>x.id===h.get('scene'));if(s<0)s=0;setScene(m,s)}
+function renderNav(){E.nav.innerHTML=MODS.map((m,i)=>`<button class="moduleBtn ${i===state.module?'active':''}" data-mod="${i}"><span class="modNum">${String(i+1).padStart(2,'0')}</span><span class="modText"><b>${m.label}</b><small>${m.sub}</small></span></button>`).join('')}
+function renderTabs(){E.sceneTabs.innerHTML=curMod().scenes.map((s,i)=>`<button class="sceneChip ${i===state.scene?'active':''}" data-scene="${i}">${String(i+1).padStart(2,'0')} ${s.name}</button>`).join('');E.sceneTabs.querySelector('.active')?.scrollIntoView({inline:'nearest',block:'nearest'});}
+function renderControls(){if(isUnified()){unifiedControls();return;}let sc=cur();let items=[];
+if(state.module===0){items.push({name:cur().id==='sketchmove'?'二维几何类型':cur().id==='professiongrips'?'专业对象类型':'演示对象',type:'select',key:'object',options:[['wall','建筑墙 W-017'],['line','二维直线 L-018'],['poly','二维多段线 PL-08'],['family','参数化构件 F-206'],['viewbox','视图范围框 VB-01'],['mep','机电管线 MEP-31'],['beam','结构梁 B-101'],['site','场地边界 LAND-01'],['circleGeom','二维圆 C-012'],['rectGeom','二维矩形 R-014'],['triangleGeom','二维三角形 T-013']]});items.push({name:'开放夹点能力',type:'check',key:'capability'});if(sc.id==='view')items.push({name:'选择层级',type:'select',key:'selectionLevel',options:[['object','对象整体'],['sub','子对象／控制面']]});if(sc.id==='restrictions')items.push({name:'编辑限制',type:'select',key:'restriction',options:[['none','正常'],['pinned','位置固定'],['readonly','只读／无权限'],['size','尺寸约束']]});if(sc.id==='gallery')items.push({name:'图鉴',type:'button',label:'打开30种夹点图鉴',key:'gallery'})}
+if(state.module===2){items.push({name:'共同编辑关系',type:'select',key:'relation',options:[['independent','无（独立端点）'],['shared','有效共享'],['mixed','共享与独立共存']]});items.push({name:'对象选择',type:'select',key:'selected',options:(state.object==='wallL'?[['W-A,W-B','选中两段L型墙'],['W-A','只选墙A'],['W-B','只选墙B'],['','取消选择']]:state.object==='solidOverlap'?[['S-A,S-B','同时选中体 A + B'],['S-A','只选体 A'],['S-B','只选体 B'],['','全部取消选择']]:[['A,B','同时选中线 A + B'],['A','只选线 A'],['B','只选线 B'],['','全部取消选择']])});if(sc.id==='disabled')items.push({name:'禁用对象',type:'select',key:'disabled',options:[['B','B 不可编辑'],['A','A 不可编辑'],['','全部可编辑']]});items.push({name:'候选切换',type:'button',label:'模拟按 Tab',key:'tab'});if(state.env==='sketch'){items.push({name:'Shift选择',type:'button',label:'示范Shift加入端点A+B',key:'shiftBoth'});items.push({name:'多夹点选择',type:'button',label:'清除Shift加选集合',key:'clearMulti'})}}
+if(state.module===2){const isSolid=state.object==='solidOverlap';items.push({name:'当前候选',type:'readonly',value:state.selected.length?(getCandidates()[state.candidateIndex]?.name||'无重合候选'):'对象 '+(state.objIndex?'B':'A')});items.push({name:'选择集合',type:'readonly',value:'对象 '+state.selected.length+' 个 / 夹点 '+state.multi.length+' 个'});items.push({name:'确认候选对象',type:'button',label:'选中当前'+(isSolid?'体':'线')+'对象',key:'confirmObject'});}
+if(state.module===2&&sc.id==='wallLshared')items.push({name:'当前机制',type:'readonly',value:state.relation==='shared'?'有效共享：两墙联动':'独立重合：不联动'});
+if(state.module===2&&sc.id==='twostagetab')items.push({name:'选择步骤',type:'readonly',value:state.selected.length===0?'第1级：Tab选对象':state.selected.length===1?'已选体：可Shift追加':'第2级：Tab选夹点'});
+if(state.module===3)items.push({name:'操作区域',type:'button',label:'重置夹点选择',key:'clearMulti'});
+if(state.module===4)items.push({name:'限制场景',type:'select',key:'restriction',options:[['none','无限制'],['size','尺寸约束'],['host','宿主平面约束'],['fail','模拟提交失败']]});
+if(state.module===5&&sc.id==='range')items.push({name:'基准范围',type:'button',label:'切换 '+state.range+' → '+(state.range==='2D'?'3D':'2D'),key:'range'});
+items.push({name:'当前选中',type:'readonly',value:state.selected.length?state.selected.join('、'):'无'});
+E.ctrl.innerHTML=items.map(it=>{let k=it.key;if(it.type==='select')return `<div class="ctrl"><label>${it.name}</label><select data-control="${k}">${it.options.map(([v,l])=>`<option value="${v}" ${String(state[k] instanceof Array?state[k].join(','):state[k])===v?'selected':''}>${l}</option>`).join('')}</select></div>`;if(it.type==='check')return `<div class="ctrl"><label>${it.name}</label><input data-control="${k}" type="checkbox" ${state[k]?'checked':''}/></div>`;if(it.type==='button')return `<div class="ctrl"><label>${it.name}</label><button data-action="${k}">${it.label}</button></div>`;return `<div class="ctrl"><label>${it.name}</label><span style="font-size:11px;color:#8192a5;max-width:147px;text-align:right">${it.value}</span></div>`}).join('')}
+function renderGuide(){const sc=cur();q('modNum').textContent='模块 '+String(state.module+1).padStart(2,'0');q('modTitle').textContent=curMod().label;q('modSub').textContent=curMod().sub;q('guideCode').textContent=sc.rule;q('guideTitle').textContent=sc.title;q('guideDesc').textContent=sc.desc;q('guideRule').textContent=sc.rule.replace('／','　·　')+'。'+sc.desc;q('guideHint').textContent=sc.hint;q('stageTitle').textContent=state.view==='plan'?'首层平面':state.view==='elevation'?'南立面':'三维示意视图';q('stageSubtitle').textContent=envLabel()+' · '+sc.name;q('lessonHeadline').textContent=sc.name+' · '+(state.hot?'③ 编辑预览→再次单击确认':state.multi.length?'② 已加选夹点→单击激活':state.selected.length?'② 识别目标夹点→单击激活':'① 选择目标对象');q('lessonSub').textContent=state.hot?'已锁定对象：Tab不切换；Esc取消，Ctrl+Z撤销':(state.object==='wallL'?'转角有效连接→共享操作一次修改两墙':state.object==='solidOverlap'?'未选中Tab切对象，选中后Tab切夹点':'项目/构件：专业实心拉伸；二维移动采用扁矩形P1；多段线中点另有S1拉伸');q('guideSteps').innerHTML=sc.steps.map((s,i)=>`<div class="stepItem ${i===state.activeStep?'active':i<state.activeStep?'done':''}"><span class="stepN">${i+1}</span><span>${escapeHtml(s)}</span></div>`).join('');setResult(state.result||sc.result);renderControls();document.querySelectorAll('[data-env]').forEach(b=>b.classList.toggle('active',b.dataset.env===state.env));q('footerRight').textContent=envLabel()+' | '+(state.view==='plan'?'1:100':'示意视图')+' | 单位：mm | 捕捉 ON';q('canvasLegend').innerHTML=`<span>环境：<strong>${envLabel()}</strong></span><span>${state.env==='sketch'?'空心 · 无填充夹点':'专业拉伸实心 · 二维扁矩形移动'}</span><span>${state.hot?'热态：指定目标后再次单击':'单击对象 → 悬停夹点 → 单击激活'}</span>`;}
+function renderAll(){renderNav();renderTabs();renderGuide();renderCanvas()}
+// A grip is a reusable symbol; fill and interaction state are computed once per render.
+function glyph(type,x,y,color='#003EFF',env=state.env,scale=1){
+ const hollow=env==='sketch';const fill=hollow?'none':color;const line=`stroke="${color}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"`;const outline=`stroke="${hollow?color:'#253548'}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"`;const solid=`fill="${fill}" ${outline}`;const plain=`fill="none" ${line}`;const t=type.toLowerCase();let g='';
+ switch(t){
+ case 'circle':g=`<circle r="8" ${solid}/>`;break;
+ case 'flat':g=`<rect x="-12" y="-5" width="24" height="10" rx="1.4" ${solid}/>`;break;
+ case 'triangle':g=`<path d="M0 -11 L11 8 H-11Z" ${solid}/>`;break;
+ case 'diamond':g=`<path d="M0 -10 L10 0 0 10 -10 0Z" ${solid}/>`;break;
+ case 'ring':g=`<circle r="11" ${solid}/><circle r="5.2" fill="#fff" stroke="${hollow?color:'#253548'}" stroke-width="2"/>`;break;
+ case 'square':g=`<rect x="-9" y="-9" width="18" height="18" rx="1" ${solid}/>`;break;
+ case 'pencil':g=`<path d="M-10 -2L0 -14 10 -2V12H-10Z" ${solid}/>`;break;
+ case 'redpoint':g=`<circle r="7" ${solid}/><path d="M-13 0H13M0 -13V13" ${plain}/>`;break;
+ case 'flip':g=`<path d="M-11 -9 L-2 0 -11 9ZM11 -9L2 0 11 9Z" ${solid}/><path d="M0 -15V15" ${plain} stroke-dasharray="3 2"/>`;break;
+ case 'cycle':g=`<path d="M-9 3A11 11 0 1 1 3 10" ${plain}/><path d="M-14 3L-7 2 -9 9Z" ${solid}/>`;break;
+ case 'rotate':g=`<path d="M-11 7A12 12 0 1 1 9 8" ${plain}/><path d="M5 10L12 8 9 1" ${plain}/><circle r="3.5" ${plain}/>`;break;
+ case 'move':g=`<path d="M0 -15V15M-15 0H15M0 -15l-4 5m4-5 4 5M0 15l-4-5m4 5 4-5M-15 0l5-4m-5 4 5 4M15 0l-5-4m5 4-5 4" ${plain}/>`;break;
+ case 'flip2':g=`<rect x="-14" y="-11" width="28" height="22" ${plain}/><path d="M-9 -5L-2 0 -9 5ZM9 -5L2 0 9 5Z" ${solid}/>`;break;
+ case 'arrow':g=`<path d="M0 -14L10 2H4V13H-4V2H-10Z" ${solid}/>`;break;
+ case 'chess':g=`<circle r="10" ${solid}/><path d="M-10 0H10M0 -10V10" ${plain}/>`;break;
+ case 'grid':g=`<rect x="-12" y="-10" width="24" height="20" ${plain}/><path d="M-12 -3H12M-12 4H12M-4 -10V10M4 -10V10" ${plain}/>`;break;
+ case 'plane':g=`<rect x="-13" y="-10" width="26" height="20" ${plain}/><path d="M-5 -1V-5Q-5 -10 0 -10Q5 -10 5 -5V-1M-8 -1H8V8H-8Z" ${plain}/>`;break;
+ case 'param':g=`<path d="M-13 0H13M0 -13V13" ${plain}/>`;break;
+ case 'tangent':g=`<path d="M-12 9H12M-9 8C-9 -15 9 -15 9 8" ${plain}/>`;break;
+ case '2d':case '3d':g=`<circle r="13" ${plain}/><text y="4.5" text-anchor="middle" font-size="10" font-family="Arial" font-weight="700" fill="${color}">${t.toUpperCase()}</text>`;break;
+ case 'bolt':g=`<path d="M4 -14L-6 1H3L-4 14 10 -3H1Z" ${solid}/>`;break;
+ case 'minus':g=`<path d="M-12 0H12" ${plain}/>`;break;
+ case 'plus':g=`<path d="M-12 0H12M0 -12V12" ${plain}/>`;break;
+ case 'dot':g=`<circle r="4.5" ${solid}/>`;break;
+ case 'create':g=`<circle r="12" ${plain}/><path d="M-7 0H7M0 -7V7" ${plain}/>`;break;
+ case 'hat':g=`<path d="M-11 -10H11L7 -1H-7Z" ${solid}/><path d="M0 10L-9 1H9Z" ${solid}/>`;break;
+ case 'dimension':g=`<path d="M-13 -5V6M13 -5V6M-13 0H13M-7 -3l-6 3 6 3M7 -3l6 3 -6 3" ${plain}/>`;break;
+ case 'lock':g=`<rect x="-8" y="-2" width="16" height="13" rx="2" ${plain}/><path d="M-5 -2V-7A5 5 0 0 1 5 -7V-2" ${plain}/>`;break;
+ case 'pin':g=`<path d="M-5 -11H5L4 -2 8 3 -8 3 -4 -2Z M0 3V15" ${solid}/>`;break;
+ default:g=`<circle r="8" ${solid}/>`;
+ }
+ return `<g transform="translate(${x} ${y}) scale(${scale})">${g}</g>`;
+}
+function objectBase(){const type=state.object;const sc=cur();
+ if(type==='unifiedTab')return [
+ {id:'UA',kind:'polygon',label:'矩形 A',pts:[[290,235],[565,235],[565,445],[290,445]]},
+ {id:'UB',kind:'polygon',label:'矩形 B',pts:[[565,235],[835,235],[835,445],[565,445]]},
+ {id:'UC',kind:'polygon',label:'三角形 C',pts:[[465,175],[720,510],[350,510]]}];
+ if(type==='overlap')return [
+ {id:'A',kind:'line',label:'直线 A',pts:[[275,245],[590,350]]},
+ {id:'B',kind:'line',label:'直线 B',pts:[[865,245],[590,350]]}];
+ if(type==='wallL')return [{id:'W-A',kind:'wall',label:'墙A · 横向',pts:[[245,300],[585,300]]},{id:'W-B',kind:'wall',label:'墙B · 竖向',pts:[[585,300],[585,505]]}];
+ if(type==='solidOverlap')return [{id:'S-A',kind:'solid',label:'体A · 标高 +0.000',x:420,y:215,w:245,h:205,z:0},{id:'S-B',kind:'solid',label:'体B · 标高 +3.600',x:420,y:215,w:245,h:205,z:3600}];
+ if(type==='circleGeom')return [{id:'C-012',kind:'circleGeom',label:'二维圆 C-012',cx:545,cy:345,r:135}];
+ if(type==='triangleGeom')return [{id:'T-013',kind:'polygon',label:'二维三角形 T-013',pts:[[400,445],[700,445],[550,245]]}];
+ if(type==='rectGeom')return [{id:'R-014',kind:'polygon',label:'二维矩形 R-014',pts:[[390,245],[700,245],[700,445],[390,445]]}];
+ if(type==='beam')return [{id:'B-101',kind:'beam',label:'结构梁 B-101',pts:[[265,355],[835,355]]}];
+ if(type==='site')return [{id:'LAND-01',kind:'site',label:'场地边界 LAND-01',pts:[[295,470],[425,260],[705,260],[825,470]]}];
+ if(type==='wall')return [{id:'W-017',kind:'wall',label:'建筑墙 W-017',pts:[[245,355],[845,355]]}];
+ if(type==='line')return [{id:'L-018',kind:'line',label:'二维直线 L-018',pts:[[280,355],[820,355]]}];
+ if(type==='poly')return [{id:'PL-08',kind:'poly',label:'二维多段线 PL-08',pts:[[260,430],[390,280],[675,280],[825,425]]}];
+ if(type==='family')return [{id:'F-206',kind:'family',label:'参数化构件 F-206',x:420,y:275,w:260,h:178}];
+ if(type==='viewbox')return [{id:'VB-01',kind:'viewbox',label:'视图范围 VB-01',x:360,y:230,w:380,h:240}];
+ if(type==='mep')return [{id:'MEP-31',kind:'mep',label:'给排水管 MEP-31',pts:[[275,355],[810,355]]}];
+ if(type==='grid')return [{id:'G-A',kind:'grid',label:'轴网 A',pts:[[250,315],[855,315]]}];
+ return []
+}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function getObjects(){return objectBase().map(o=>{const ov=state.overrides[o.id];if(!ov)return o;const n=clone(o);if(ov.pts)n.pts=clone(ov.pts);if(ov.x!==undefined)n.x=ov.x;if(ov.y!==undefined)n.y=ov.y;if(ov.w)n.w=ov.w;if(ov.h)n.h=ov.h;if(ov.cx!==undefined)n.cx=ov.cx;if(ov.cy!==undefined)n.cy=ov.cy;if(ov.r!==undefined)n.r=ov.r;return n})}
+function is2D(o){return ['line','poly','circleGeom','polygon'].includes(o.kind)}
+function isProfessional(o){return ['wall','beam','mep','site','solid','family'].includes(o.kind)}
+function stretchShape(o){return {wall:'triangle',beam:'square',mep:'ring',site:'pencil',solid:'triangle',family:'triangle'}[o.kind]||'circle'}
+function isOverlap(){return ['overlap','solidOverlap','wallL'].includes(state.object)}
+function overlapIds(){return state.object==='solidOverlap'?['S-A','S-B']:state.object==='wallL'?['W-A','W-B']:['A','B']}
+function jointPoint(o){if(state.object==='wallL')return o.id==='W-A'?o.pts[1]:o.pts[0];if(o.kind==='solid')return[o.x+o.w+34,o.y+o.h/2];return o.pts[o.pts.length-1]}
+function polygonInteriorPoint(pts){const x=pts.reduce((s,p)=>s+p[0],0)/pts.length,y=pts.reduce((s,p)=>s+p[1],0)/pts.length;return[x,y]}
+function getGripsForObj(o){
+ const v=[];const add=(role,type,x,y,action,extra={})=>v.push({id:`${o.id}:${role}`,oid:o.id,role,type,x,y,action,name:o.label,...extra});
+ if(!state.selected.includes(o.id)||!state.capability)return v;
+ const sketch=state.env==='sketch';
+ if(o.kind==='circleGeom'){
+  add('move','flat',o.cx,o.cy,'P1整体移动');
+  [[o.cx+o.r,o.cy],[o.cx-o.r,o.cy],[o.cx,o.cy-o.r],[o.cx,o.cy+o.r]].forEach((p,i)=>add('radius'+i,'circle',p[0],p[1],'S1半径调整'));
+  return v;
+ }
+ if(o.kind==='polygon'){
+  o.pts.forEach((p,i)=>add('vertex'+i,'circle',p[0],p[1],'S1顶点拉伸',{index:i}));
+  // 独立矩形/三角形是独立几何对象，非多段线；不显示线段中点拉伸夹点。
+  // Vela 二维整体移动始终使用稳定内部位置的扁矩形。
+  const c=polygonInteriorPoint(o.pts);add('move','flat',c[0],c[1],'P1整体移动');
+  return v;
+ }
+ if(o.kind==='solid'){
+  if(!sketch){add('face','triangle',o.x+o.w+34,o.y+o.h/2,'S1体面拉伸');add('move','move',o.x+o.w/2,o.y-52,'P1体对象整体移动');}
+  else {let pts=[[o.x,o.y],[o.x+o.w,o.y],[o.x+o.w,o.y+o.h],[o.x,o.y+o.h]];pts.forEach((p,i)=>add('corner'+i,'circle',p[0],p[1],'S1轮廓拉伸'));pts.forEach((p,i)=>{const n=pts[(i+1)%4];add('m'+i,'flat',(p[0]+n[0])/2,(p[1]+n[1])/2,'S1轮廓多段线中点拉伸',{segment:i})});}
+  return v;
+ }
+ if(o.kind==='poly'){
+  o.pts.forEach((p,i)=>add('p'+i,'circle',p[0],p[1],'S1顶点拉伸',{index:i,menu:sketch}));
+  // 仅多段线提供段中点多功能拉伸控制。
+  for(let i=0;i<o.pts.length-1;i++){const p=o.pts[i],n=o.pts[i+1];add('m'+i,'flat',(p[0]+n[0])/2,(p[1]+n[1])/2,'S1多段线段中点拉伸',{segment:i})}
+  const c=polygonInteriorPoint(o.pts);add('move','flat',c[0],c[1]+35,'P1整体移动');
+  return v;
+ }
+ if(o.kind==='line'||o.kind==='wall'||o.kind==='mep'||o.kind==='grid'||o.kind==='beam'||o.kind==='site'){
+  const p0=o.pts[0],p1=o.pts[o.pts.length-1],mid=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2];
+  if(o.kind==='grid'){if(!sketch){add('start','dot',p0[0],p0[1],'E3视图范围');add('end','dot',p1[0],p1[1],'E3视图范围');add('range',state.range==='2D'?'2d':'3d',p1[0]+35,p1[1]-28,'Q2.4范围切换',{single:'range'})}return v;}
+  const typ=sketch||o.kind==='line'?'circle':stretchShape(o);
+  if(sketch&&o.kind==='site'){o.pts.forEach((p,i)=>add('p'+i,'circle',p[0],p[1],'S1轮廓拉伸',{index:i}));for(let i=0;i<o.pts.length;i++){const p=o.pts[i],n=o.pts[(i+1)%o.pts.length];add('m'+i,'flat',(p[0]+n[0])/2,(p[1]+n[1])/2,'S1轮廓多段线中点拉伸',{segment:i})}return v;}
+  add('start',typ,p0[0],p0[1],'S1拉伸');
+  add('end',typ,p1[0],p1[1],'S1拉伸');
+  if(o.kind==='line')add('move','flat',mid[0],mid[1],'P1整体移动');
+  else if(sketch)add('move','flat',mid[0],mid[1],'P1轮廓线段整体移动');
+  else add('move','move',mid[0],mid[1]-50,'P1整体移动');
+  if(o.kind==='mep'&&!sketch)add('create','create',p1[0]+47,p1[1],'E2管线创建',{command:'create'});
+  if(state.restriction==='pinned'&&o.kind==='wall')add('unpin','pin',mid[0]+34,mid[1]-70,'解除对象固定',{single:'unpin'});
+  return v;
+ }
+ if(o.kind==='family'){
+  if(sketch){const pts=[[o.x,o.y],[o.x+o.w,o.y],[o.x+o.w,o.y+o.h],[o.x,o.y+o.h]];pts.forEach((p,i)=>add('corner'+i,'circle',p[0],p[1],'S1轮廓拉伸'));pts.forEach((p,i)=>{const n=pts[(i+1)%4];add('m'+i,'flat',(p[0]+n[0])/2,(p[1]+n[1])/2,'S1轮廓多段线中点拉伸',{segment:i})});}
+  else{add('dimension','triangle',o.x+o.w+18,o.y+o.h/2,'S1参数尺寸拉伸');add('move','move',o.x+o.w/2,o.y-42,'P1体对象整体移动');add('flip','flip',o.x+o.w/2,o.y+o.h+30,'P3翻转',{single:'flip'});if(state.env==='element')add('param','param',o.x+o.w/2,o.y-76,'Q1参数定位');if(state.selectionLevel==='sub'&&state.env==='element')add('sub','square',o.x+o.w/2,o.y+o.h/2,'子对象形体控制');}
+  return v;
+ }
+ if(o.kind==='viewbox'&&state.env==='project'&&state.view!=='3d'){add('left','diamond',o.x,o.y+o.h/2,'E3视图范围');add('right','diamond',o.x+o.w,o.y+o.h/2,'E3视图范围')}
+ return v;
+}
+function getCandidates(){
+ if(!isOverlap()||!state.capability)return [];
+ const ids=overlapIds(),objs=getObjects(),selected=state.selected.filter(x=>ids.includes(x));
+ const pts=selected.map(id=>jointPoint(objs.find(o=>o.id===id))).filter(Boolean);
+ if(pts.length===2&&Math.hypot(pts[0][0]-pts[1][0],pts[0][1]-pts[1][1])>8)return [];
+ const first=objs.find(o=>o.id===ids[0]);if(!first)return[];
+ const at=jointPoint(first),isSolid=state.object==='solidOverlap';let c=[];
+ const sharedEligible=!isSolid&&selected.length===2&&['shared','mixed'].includes(state.relation);
+ if(sharedEligible)c.push({id:'shared:center',oid:'shared',role:'center',type:state.object==='wallL'?'triangle':'circle',x:at[0],y:at[1],action:'S1共享端点联合拉伸',name:state.object==='wallL'?'L型墙 · 共享转角':'共享端点 · A+B',shared:true});
+ if(!sharedEligible||state.relation==='mixed'){
+  const ordered=state.selected.filter(id=>ids.includes(id)).reverse();
+  for(const id of ordered){const o=objs.find(x=>x.id===id),p=jointPoint(o);if(!p)continue;c.push({id:id+':center',oid:id,role:'center',type:isSolid?'triangle':state.env==='sketch'?'circle':stretchShape(o),x:p[0],y:p[1],action:isSolid?'S1体面拉伸':'S1独立端点拉伸',name:o.label+(isSolid?' · 体面控制':' · 转角/端点')});}
+ }
+ return c.map(g=>({...g,disabled:state.disabled===g.oid||state.restriction==='readonly'}));
+}
+function getVisibleGrips(){
+ let gs=getObjects().flatMap(getGripsForObj);
+ if(isOverlap()){
+  const cand=getCandidates();state.lastCandidate=cand;
+  if(cand.length){const obj=getObjects();gs=gs.filter(g=>{if(g.role!=='face'&&g.role!=='end'&&g.role!=='start')return true;const o=obj.find(x=>x.id===g.oid);if(!o)return true;const j=jointPoint(o);return Math.hypot(g.x-j[0],g.y-j[1])>4;});state.candidateIndex=((state.candidateIndex%cand.length)+cand.length)%cand.length;gs.push(cand[state.candidateIndex]);}
+ }else state.lastCandidate=[];
+ return gs.map(g=>({...g,disabled:!!g.disabled||state.restriction==='readonly'||state.restriction==='pinned'&&!g.single&&g.role!=='pin'}));
+}
+function getObjectSVG(o){const sel=state.selected.includes(o.id);const emphasized=state.hoverGrip?.startsWith(o.id+':')||(state.hoverGrip?.startsWith('shared:')&&(['A','B','W-A','W-B'].includes(o.id)))||state.hot&&state.hot.oids.includes(o.id);let shape='',line='',pos=[0,0];
+ if(o.pts){const a=o.pts.map(x=>x.join(',')).join(' ');
+ if(o.kind==='polygon'){shape+=`<polygon points="${a}" fill="#ecf3f8" fill-opacity=".8" stroke="${sel?'#427fc9':'#8699af'}" stroke-width="4"/>`;if(emphasized)shape+=`<polygon points="${a}" class="emphasis"/>`;pos=o.pts[0];return `<g class="obj" data-obj="${o.id}" aria-label="${o.label}">${shape}<text class="modelLabel" x="${pos[0]}" y="${pos[1]-20}" text-anchor="middle">${o.label}</text></g>`;} if(o.kind==='beam')line=`<polyline points="${a}" fill="none" stroke="#596d83" stroke-width="25" stroke-linecap="square"/><polyline points="${a}" fill="none" stroke="#ccd8e6" stroke-width="19"/>`;
+ else if(o.kind==='site')line=`<polygon points="${a}" fill="#f3f8ee" stroke="#71916a" stroke-width="4" stroke-dasharray="9 4"/>`;
+ else if(o.kind==='wall'){
+ line=`<polyline points="${a}" fill="none" stroke="#7f8f9f" stroke-width="17" stroke-linecap="square"/><polyline points="${a}" fill="none" stroke="#e1e7ee" stroke-width="11"/>`;
+ }else if(o.kind==='mep')line=`<polyline points="${a}" fill="none" stroke="#91aeb9" stroke-width="15" stroke-linecap="round"/><polyline points="${a}" fill="none" stroke="#e6f5f9" stroke-width="8" stroke-linecap="round"/><circle cx="${o.pts[0][0]}" cy="${o.pts[0][1]}" r="13" fill="white" stroke="#779bad" stroke-width="2"/>`;
+ else if(o.kind==='grid')line=`<polyline points="${a}" fill="none" stroke="#83a3b3" stroke-width="2.8" stroke-dasharray="16 6"/><circle cx="${o.pts[0][0]}" cy="${o.pts[0][1]}" r="22" fill="#fff" stroke="#829db3" stroke-width="2"/><text x="${o.pts[0][0]}" y="${o.pts[0][1]+6}" text-anchor="middle" font-size="18" fill="#66869d">A</text>`;
+ else line=`<polyline points="${a}" fill="none" stroke="${sel?'#3f83d4':'#627c91'}" stroke-width="${o.kind==='poly'?5:5}" stroke-linecap="round" stroke-linejoin="round"/>`;
+ if(sel&&!['grid'].includes(o.kind))shape+=`<polyline points="${a}" class="selectedOutline"/>`;
+ if(emphasized)shape+=`<polyline points="${a}" class="emphasis"/>`;
+ shape+=line;pos=o.pts[0];
+ }else if(o.kind==='circleGeom'){shape=`<circle cx="${o.cx}" cy="${o.cy}" r="${o.r}" fill="#eaf4fd88" stroke="${sel?'#3e7fc6':'#7e94aa'}" stroke-width="4"/>`;if(emphasized)shape+=`<circle cx="${o.cx}" cy="${o.cy}" r="${o.r+5}" class="emphasis"/>`;pos=[o.cx,o.cy-o.r+5];}
+ else if(o.kind==='solid'){const d=76;const c=state.hoverGrip?.startsWith(o.id+':')||state.hot?.oids.includes(o.id);const base=sel?'#557eaa':'#9caec2';const isB=o.id==='S-B';const underCursor=state.object==='solidOverlap'&&!state.selected.length&&state.hoverAt==='object'&&o.id===(state.objIndex?'S-B':'S-A');const xx=o.x,yy=o.y,ww=o.w,hh=o.h;const opacity=(c||underCursor)?'.98':isB?'.28':'.68';shape=`<g opacity="${opacity}" stroke="${(c||underCursor)?'#ec7d32':base}" stroke-width="${(c||underCursor)?'5':'2.8'}" stroke-linejoin="round" fill="none"><polygon points="${xx},${yy} ${xx+d},${yy-d} ${xx+ww+d},${yy-d} ${xx+ww},${yy}" fill="#cbdcec"/><polygon points="${xx},${yy} ${xx+ww},${yy} ${xx+ww},${yy+hh} ${xx},${yy+hh}" fill="#ecf4ff"/><polygon points="${xx+ww},${yy} ${xx+ww+d},${yy-d} ${xx+ww+d},${yy+hh-d} ${xx+ww},${yy+hh}" fill="#a9c4df"/></g>`;if(sel)shape+=`<rect x="${xx-7}" y="${yy-7}" width="${ww+14}" height="${hh+14}" stroke="${c?'#ec7d32':'#7ea4d5'}" stroke-width="${c?'3':'1.5'}" fill="none" stroke-dasharray="8 5"/>`;pos=[xx+ww/2,yy];return `<g class="obj" data-obj="${o.id}" aria-label="${o.label}">${shape}</g>`;}
+ else if(o.kind==='family'){
+ let mid=o.x+o.w/2;
+ shape=`<g transform="translate(${mid} ${o.y+o.h/2}) ${state.flip?'scale(-1,1)':''} translate(${-mid} ${-(o.y+o.h/2)})"><rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" fill="#e4ecf3" stroke="#879aae" stroke-width="3"/><rect x="${o.x+18}" y="${o.y+16}" width="${o.w-36}" height="${o.h-32}" fill="#f6f9fc" stroke="#aebecf" stroke-width="1.5"/><path d="M${o.x+o.w/2} ${o.y+18}V${o.y+o.h-18}" stroke="#92a7bc" stroke-dasharray="8 5" stroke-width="2"/><path d="M${o.x+35} ${o.y+35}L${o.x+o.w-36} ${o.y+o.h-33}" stroke="#b7c7d5" stroke-width="1"/></g>`;
+ if(sel)shape+=`<rect x="${o.x-5}" y="${o.y-5}" width="${o.w+10}" height="${o.h+10}" class="focusRing"/>`;
+ if(emphasized)shape+=`<rect x="${o.x-6}" y="${o.y-6}" width="${o.w+12}" height="${o.h+12}" class="emphasis"/>`;
+ pos=[o.x+o.w/2,o.y];
+ }else if(o.kind==='viewbox'){
+ shape=`<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" fill="#dbe8f522" stroke="#9caebe" stroke-width="3" stroke-dasharray="11 8"/>`;
+ if(sel)shape+=`<rect x="${o.x-4}" y="${o.y-4}" width="${o.w+8}" height="${o.h+8}" class="focusRing"/>`;
+ pos=[o.x+o.w/2,o.y];
+ }
+ return `<g class="obj" data-obj="${o.id}" aria-label="${o.label}">${shape}<text class="modelLabel" x="${pos[0]}" y="${pos[1]-27}" text-anchor="middle">${o.label}</text></g>`;
+}
+function bgDrawing(){let r=`<g opacity=".72"><path d="M155 175H975M155 515H975" class="refDash"/><path d="M215 140V555M870 140V555" class="refDash"/><circle cx="215" cy="175" r="19" class="anchor"/><text x="215" y="180" class="labelSvg" text-anchor="middle">1</text><circle cx="870" cy="175" r="19" class="anchor"/><text x="870" y="180" class="labelSvg" text-anchor="middle">2</text><circle cx="215" cy="515" r="19" class="anchor"/><text x="215" y="520" class="labelSvg" text-anchor="middle">A</text><circle cx="870" cy="515" r="19" class="anchor"/><text x="870" y="520" class="labelSvg" text-anchor="middle">B</text></g>`;
+ if(state.env==='sketch')r+=`<path d="M165 140H940V565H165Z" stroke="#cda670" stroke-width="1.4" fill="#fff8eb22" stroke-dasharray="10 7"/><text x="865" y="549" fill="#b88a4f" font-size="12" text-anchor="end">草图轮廓编辑平面</text>`;
+ if(state.env==='element')r+=`<rect x="180" y="160" width="742" height="380" rx="3" stroke="#a2b7ca" stroke-dasharray="8 6" stroke-width="1.8" fill="#e7eef71b"/><text x="920" y="150" text-anchor="end" fill="#8ba1b5" font-size="12">构件定义空间</text>`;
+ if(state.view==='elevation')r+=`<path d="M160 500H947" stroke="#a6b4c2" stroke-width="3"/><text x="940" y="492" text-anchor="end" fill="#8799ae">±0.000</text>`;
+ if(state.view==='3d')r+=`<path d="M235 550L755 550 875 425M755 550V195" stroke="#a3b5c6" stroke-width="2" fill="none"/><text x="756" y="188" fill="#7799b7">Z</text>`;
+ if(state.object==='wallL'){r+=`<g pointer-events="none"><rect x="690" y="195" width="260" height="106" rx="7" fill="#fff" stroke="#c7d9e9"/><text x="706" y="222" fill="#486781" font-size="15" font-weight="700">L型墙 · 连接转角</text><text x="706" y="246" fill="#566e82" font-size="13">墙A：水平段（左 → 转角）</text><text x="706" y="267" fill="#566e82" font-size="13">墙B：垂直段（转角 → 下）</text><text x="706" y="289" fill="#3772ac" font-size="12">共享夹点：同时修改两段墙</text></g>`;} if(state.object==='solidOverlap'){const arr=['S-A','S-B'];r+=`<g pointer-events="none"><rect x="735" y="152" width="288" height="124" rx="7" fill="#fff" stroke="#cad7e6"/><text x="753" y="180" font-size="14" fill="#50657e" font-weight="700">重合体对象 · 归属识别</text>`;for(let i=0;i<2;i++){let id=arr[i];let selected=state.selected.includes(id);let hot=state.hot?.oids.includes(id);let hov=state.hoverGrip?.startsWith(id+':')||(!state.selected.length&&state.objIndex===i&&state.hoverAt==='object');let hi=hov||hot;r+=`<rect x="747" y="${191+i*34}" width="263" height="28" rx="4" fill="${hi?'#fff1e5':selected?'#eff5fc':'#f7f9fc'}" stroke="${hi?'#ec7d32':selected?'#98b9e3':'#e3eaf1'}"/><text x="760" y="${210+i*34}" font-size="13" fill="#37526e">${selected?'☑':'□'} 体${i===0?'A':'B'} · 标高 ${i===0?'+0.000':'+3.600'}${hov?' ← 当前候选':''}</text>`;}r+='</g>';}return r;
+}
+function currentStroke(g){if(g.disabled)return '#9cabb9';if(state.hot&&(g.id===state.hot.gid||state.hot.gids?.includes(g.id)))return 'var(--hot)';if(state.hoverGrip===g.id||state.hoverAt==='center'&&state.lastCandidate.length&&g.id===state.lastCandidate[state.candidateIndex]?.id)return 'var(--warm)';return 'var(--cold)'}
+function gripHTML(g){const col=currentStroke(g);const ismulti=state.multi.includes(g.id);const ishot=state.hot?.gid===g.id||state.hot?.gids?.includes(g.id);let frame=ismulti?`<circle r="19" fill="none" stroke="#8b6cbb" stroke-dasharray="4 3" stroke-width="2"/>`:'';
+ if(g.shared)frame+=`<circle r="19" fill="none" stroke="#4b7ab5" stroke-width="1.5" stroke-dasharray="3 4"/>`;
+ if(g.disabled)frame+=`<path d="M-8 -8L8 8" stroke="#687788" stroke-width="2"/>`;
+ const count=isOverlap()&&state.hoverAt==='center'&&state.lastCandidate.length>1&&g.id===state.lastCandidate[state.candidateIndex]?.id?`<g class="gripTag" transform="translate(20 -26)"><rect x="0" y="0" width="35" height="20" rx="4"/><text x="17.5" y="14" text-anchor="middle">${state.candidateIndex+1}/${state.lastCandidate.length}</text></g>`:'';
+ const tooltip=state.hoverGrip===g.id||state.hoverAt==='center'&&g.id===state.lastCandidate[state.candidateIndex]?.id?`<g class="gripTag" transform="translate(18 16)"><rect width="${g.shared?187:212}" height="29" rx="5"/><text x="9" y="19" style="font-size:12px">${escapeHtml(g.shared?'共享端点 · A+B | '+g.action:g.name+' | '+g.action)}</text></g>`:'';
+ return `<g class="g ${g.disabled?'disabled':''} ${state.hoverGrip===g.id?'pulsing':''}" data-gid="${escapeHtml(g.id)}" data-griptype="${g.type}" transform="translate(${g.x} ${g.y})"><circle class="pulse" r="15"/>${frame}${glyph(g.type,0,0,col,state.env)}<circle r="17" class="halo"/></g>`;
+}
+function updatedPoints(o,h,dx,dy){
+ const a=clone(o.pts);if(h.isMulti){for(const gid of h.gids.filter(v=>v.startsWith(o.id+':'))){const role=gid.split(':')[1];if(role==='start')a[0]=[a[0][0]+dx,a[0][1]+dy];else if(role==='end')a[a.length-1]=[a[a.length-1][0]+dx,a[a.length-1][1]+dy];else if(role.startsWith('p')||role.startsWith('vertex')){let i=Number(role.replace(/\D/g,''));if(a[i])a[i]=[a[i][0]+dx,a[i][1]+dy];}}}
+ else if(h.role==='move')a.forEach(p=>{p[0]+=dx;p[1]+=dy});
+ else if(h.role.startsWith('m')&&/^m\d+$/.test(h.role)){let i=+h.role.slice(1),j=(i+1)%a.length;for(const k of [i,j]){if(a[k])a[k]=[a[k][0]+dx,a[k][1]+dy]}}
+ else if(h.role.startsWith('vertex')||/^p\d+$/.test(h.role)||h.role.startsWith('corner')){const i=Number(h.role.replace(/\D/g,''));if(a[i])a[i]=[a[i][0]+dx,a[i][1]+dy]}
+ else if(h.shared||h.role==='center'){const i=state.object==='wallL'&&o.id==='W-B'?0:a.length-1;a[i]=[a[i][0]+dx,a[i][1]+dy]}
+ else if(h.role==='start')a[0]=[a[0][0]+dx,a[0][1]+dy];
+ else a[a.length-1]=[a[a.length-1][0]+dx,a[a.length-1][1]+dy];
+ return a;
+}
+function drawPreview(){
+ if(!state.hot||!state.pointer)return '';
+ const h=state.hot,p=state.pointer,objs=getObjects(),dx=p.x-h.x,dy=p.y-h.y;let out='';
+ for(const id of h.oids){const o=objs.find(x=>x.id===id);if(!o)continue;
+  if(o.pts){const pts=updatedPoints(o,h,dx,dy);out+=o.kind==='polygon'?`<polygon points="${pts.map(v=>v.join(',')).join(' ')}" class="preview"/>`:`<polyline points="${pts.map(v=>v.join(',')).join(' ')}" class="preview"/>`;}
+  else if(o.kind==='circleGeom')out+=`<circle cx="${o.cx+(h.role==='move'?dx:0)}" cy="${o.cy+(h.role==='move'?dy:0)}" r="${h.role==='move'?o.r:Math.max(12,o.r+dx)}" class="preview"/>`;
+  else if(o.kind==='solid'||o.kind==='family'||o.kind==='viewbox'){
+   const moving=h.role==='move',nw=moving?o.w:Math.max(40,o.w+dx);
+   out+=`<rect x="${o.x+(moving?dx:0)}" y="${o.y+(moving?dy:0)}" width="${nw}" height="${o.h}" class="preview"/>`;
+  }
+ }
+ return out;
+}
+function candidateBadge(){const arr=state.lastCandidate;if(arr.length<=1||state.hoverAt!=='center'||state.hot)return '';const g=arr[state.candidateIndex];return `<g class="gripTag" pointer-events="none" transform="translate(${g.x+21} ${g.y-28})"><rect width="38" height="21" rx="4"/><text x="19" y="15" text-anchor="middle">${state.candidateIndex+1}/${arr.length}</text></g>`}
+function renderCanvas(){if(isUnified()){unifiedRender();return;}const objs=getObjects();const grips=getVisibleGrips();state.gripMap=new Map(grips.map(g=>[g.id,g]));q('lessonHeadline').textContent=cur().name+' · '+(state.hot?'③ 指定目标→再次单击确认':state.multi.length?'② Shift已选'+state.multi.length+'点→单击激活':state.selected.length?'② 选择夹点→单击激活':'① Tab选对象→单击确认');E.canvas.innerHTML=`<g>${bgDrawing()}</g>${(state.object==='solidOverlap'&&!state.selected.length&&state.hoverAt==='object'?objs.slice().sort((a,b)=>Number(a.id===(state.objIndex?'S-B':'S-A'))-Number(b.id===(state.objIndex?'S-B':'S-A'))):objs).map(getObjectSVG).join('')}${drawPreview()}${grips.map(gripHTML).join('')}${candidateBadge()}`;q('canvasLegend').innerHTML=`<span>环境：<strong>${envLabel()}</strong></span><span>${state.env==='sketch'?'独立二维图元：端点空心圆S1 · 中心扁矩形P1；多段线另有中点S1':'夹点形态按对象类型定义'}</span><span>${state.hot?'热态：移动鼠标后单击确认':'选择对象 · 悬停夹点 · 单击激活'}</span>${state.multi.length?`<span><strong>已选夹点 ${state.multi.length} 个</strong></span>`:''}`;}
+function svgPoint(ev){const pt=E.canvas.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const m=E.canvas.getScreenCTM();if(!m)return{x:550,y:340};const r=pt.matrixTransform(m.inverse());return{x:r.x,y:r.y}}
+function objSelect(id,shift=false){if(state.hot)return;
+ if(shift){state.selected.includes(id)?state.selected=state.selected.filter(x=>x!==id):state.selected.push(id)}else state.selected=[id];state.candidateIndex=0;state.hoverGrip=null;state.hoverAt='';state.multi=[];hideMenu();setStep(1);setResult(`${state.selected.length}个对象被选中；根据${envLabel()}生成对应夹点。`);renderGuide();renderCanvas();}
+function candidatesTab(force=false){if(isUnified()){unifiedTab();return;}if(state.hot){toast('热态已锁定操作目标，Tab不切换其他对象或夹点');return;}
+ if(state.menuOpen){toast('菜单打开：Tab由菜单管理焦点');return;}
+ if(isOverlap()){
+ if(!force&&state.hoverAt!=='center'&&state.hoverAt!=='object'){toast('请先将鼠标移到重合端点，再按Tab',true);return;}
+ const cs=getCandidates();if(!state.selected.length){state.objIndex=(state.objIndex+1)%2;state.hoverAt='object';const kind=state.object==='solidOverlap'?'体':state.object==='wallL'?'墙':'直线';setResult(`对象候选 ${state.objIndex+1}/2：${kind} ${state.objIndex?'B':'A'}；点击重合对象或使用“确认候选对象”按钮选中。`);renderCanvas();return}
+ if(cs.length>1){state.candidateIndex=(state.candidateIndex+1)%cs.length;const g=cs[state.candidateIndex];state.hoverAt='center';state.hoverGrip=g.id;const hi=q('hoverInfo');hi.textContent=g.disabled?g.name+' · 禁用':g.shared?(state.object==='wallL'?'L型墙A+B · 共享转角 · 联合编辑':'共享端点 · A+B · 联合编辑'):g.name+' · '+g.action;setResult(`候选 ${state.candidateIndex+1}/${cs.length}：${g.shared?'共享端点 A+B':g.name}。${g.disabled?'当前夹点被禁用，不可激活。':'Tab仅改变候选，不修改选择集。'}`);setStep(1);renderCanvas();return}
+ }
+ toast('当前位置无多个有效候选夹点');}
+function gripClick(g,shift=false){if(state.hot){commit({x:g.x,y:g.y});return;}if(g.disabled){toast('该夹点不可编辑：固定或编辑权限限制',true);setResult('夹点保留禁用反馈，但不能进入热态。');return;}
+ if(shift){if(state.env!=='sketch'){toast('仅草图环境支持Shift加选独立夹点',true);return;}if(g.shared){toast('共享夹点不是独立夹点，不能作为Shift多选目标',true);return;}state.multi.includes(g.id)?state.multi=state.multi.filter(x=>x!==g.id):state.multi.push(g.id);setResult(`已选独立夹点 ${state.multi.length} 个。${state.multi.length>0?'松开Shift后单击其中一个已选夹点开始共同编辑。':''}`);setStep(1);renderCanvas();return;}
+ if(g.single){if(g.single==='flip'){state.flip=!state.flip;toast('已翻转当前构件实例');setResult('单击执行型：构件实例方向已'+(state.flip?'翻转':'恢复')+'，未进入热态。')}if(g.single==='range'){state.range=state.range==='2D'?'3D':'2D';setResult(`已切换至${state.range}范围，${state.range==='2D'?'只改变当前视图表达':'调整模型基准范围'}。`);toast('范围切换：'+state.range);}if(g.single==='unpin'){state.restriction='none';setResult('已通过图钉夹点解除位置固定；原先禁用的几何夹点恢复可用。');toast('对象已解除固定');}setStep(2);renderCanvas();renderControls();return;}
+ const gids=state.multi.includes(g.id)?state.multi.slice():[g.id];const oids=g.shared?overlapIds():state.multi.includes(g.id)?[...new Set(gids.map(v=>v.split(':')[0]))]:[g.oid];
+ state.hot={gid:g.id,gids,oids,role:g.role,x:g.x,y:g.y,mode:g.command||'',isMulti:state.multi.includes(g.id),shared:!!g.shared,action:g.action};state.pointer=null;q('hoverInfo').hidden=true;hideMenu();setStep(2);setResult(`已激活${g.shared?'共享夹点':g.name}，进入热态。松开鼠标后移动指定目标，再次单击确认。`);toast('热态：移动鼠标指定目标，单击确认；Esc取消');renderCanvas();}
+function snapshot(){return {overrides:clone(state.overrides),flip:state.flip,range:state.range}}
+function revertSnapshot(s){state.overrides=clone(s.overrides);state.flip=s.flip;state.range=s.range}
+function commit(pt){
+ if(!state.hot)return;const h=state.hot,p=pt||state.pointer||{x:h.x+60,y:h.y-30},dx=p.x-h.x,dy=p.y-h.y;
+ if(Math.abs(dx)<1&&Math.abs(dy)<1){toast('请指定与起点不同的目标位置',true);return}
+ if(state.restriction==='size'&&(Math.abs(dx)>145||Math.abs(dy)>85)){toast('尺寸约束：目标超出允许范围',true);setResult('目标非法，保持热态并允许重新输入。');return}
+ if(state.restriction==='host'&&Math.abs(dy)>65){toast('工作平面约束：不允许该目标',true);setResult('工作平面约束不满足，保持热态。');return}
+ if(state.restriction==='fail'){state.hot=null;state.pointer=null;state.multi=[];toast('提交失败：已全部回退',true);setResult('主对象与关联对象没有保留任何部分修改。');renderCanvas();return}
+ state.undo.push(snapshot());state.redo=[];
+ for(const id of h.oids){const o=getObjects().find(x=>x.id===id);if(!o)continue;
+  if(h.mode==='create'&&o.pts){state.overrides[id]={pts:[o.pts[o.pts.length-1],[p.x,p.y]]};continue}
+  if(o.pts)state.overrides[id]={pts:updatedPoints(o,h,dx,dy)};
+  else if(o.kind==='circleGeom')state.overrides[id]={cx:o.cx+(h.role==='move'?dx:0),cy:o.cy+(h.role==='move'?dy:0),r:h.role==='move'?o.r:Math.max(12,o.r+dx)};
+  else if(o.kind==='solid'||o.kind==='family'||o.kind==='viewbox'){state.overrides[id]={x:o.x+(h.role==='move'?dx:0),y:o.y+(h.role==='move'?dy:0),w:h.role==='move'?o.w:Math.max(45,o.w+dx),h:o.h};}
+ }
+ const count=h.oids.length;state.justCommitted=true;state.hot=null;state.pointer=null;state.multi=[];state.hoverGrip=null;state.hoverAt='';state.candidateIndex=0;
+ setStep(3);setResult(count>1?`操作已确认：${count}个对象同时更新，Ctrl+Z可一次撤销。`:'操作已确认：仅当前目标对象更新，其他对象不变。');toast(count>1?'共享/多夹点共同修改已提交':'夹点操作已提交');renderGuide();renderCanvas();
+}
+function cancelHot(){if(state.hot){state.hot=null;state.pointer=null;state.multi=[];state.hoverGrip=null;toast('已取消，恢复本次操作前状态');setResult('Esc已取消未提交编辑。对象几何保持原状。');renderCanvas();return true}return false}
+function undo(){if(state.hot){cancelHot();return}if(!state.undo.length){toast('暂无可撤销的已提交修改');return}state.redo.push(snapshot());revertSnapshot(state.undo.pop());setResult('已撤销本次提交：对象及关联状态恢复。');renderCanvas();}
+function reset(){setScene(state.module,state.scene)}
+function changeEnvironment(env){if(!['project','element','sketch'].includes(env))return;if(state.hot)cancelHot();state.env=env;state.hoverGrip=null;state.candidateIndex=0;state.multi=[];hideMenu();setResult(`已切换至${envLabel()}。夹点集合重新计算。${env==='sketch'?'所有可见夹点空心、无填充。':'不自动开放草图中的多夹点加选能力。'}`);renderGuide();renderCanvas()}
+function controlChange(key,value){switch(key){
+ case 'object':state.object=value;state.selected=[objectBase()[0]?.id].filter(Boolean);state.overrides={};state.multi=[];state.hot=null;state.candidateIndex=0;setResult('已选择演示对象：'+objectBase()[0]?.label+'；对应夹点重新生成。');break;
+ case 'capability':state.capability=!!value;setResult(value?'已开放编辑能力，当前可生成允许的夹点。':'对象没有开放夹点能力；即使被选中也不显示夹点。');break;
+ case 'restriction':state.restriction=value;state.hot=null;state.pointer=null;setResult({none:'无限制：夹点可以激活。',pinned:'对象位置固定：对应几何夹点显示禁用状态。',readonly:'对象只读：所有编辑夹点不可激活。',size:'尺寸约束：夹点仍显示，目标确认时才校验。',host:'宿主关系有效：目标超出工作平面时不能提交。',fail:'模拟必要关联更新失败：确认时将整体回退。'}[value]||'限制已变化');break;
+ case 'relation':state.relation=value;state.candidateIndex=0;setResult(value==='independent'?'两个重合端点没有共同编辑关系，保持独立。':value==='shared'?'对象具有有效共享关系，生成一个共享夹点。':'共享入口与独立编辑入口并存：按共享、A、B的顺序切换。');break;
+ case 'selected':state.selected=value?value.split(','):[];state.candidateIndex=0;setResult(state.selected.length?'已更新对象选择集；重合候选根据选择范围重新计算。':'对象未选中：Tab仅切换对象候选。');break;
+ case 'selectionLevel':state.selectionLevel=value;setResult('选择层级：'+(value==='sub'?'子对象':'对象整体')+'；按当前层级重新确定夹点。');break;
+ case 'disabled':state.disabled=value;setResult((value?`对象${value}禁用，但仍可成为Tab候选。`:'所有对象可编辑。'));break;
+ }
+ renderGuide();renderCanvas();}
+function hideMenu(){clearTimeout(menuTimer);state.menuOpen=false;state.menuGrip=null;state.hoveringMenu=false;E.menu.classList.remove('show');E.menu.innerHTML=''}
+function scheduleMenu(g){clearTimeout(menuTimer);if(!g?.menu||state.env!=='sketch'||state.hot)return;menuTimer=setTimeout(()=>{
+ if(state.hot||state.hoverGrip!==g.id)return;
+ const box=E.workspace.getBoundingClientRect();const m=E.canvas.getScreenCTM();if(!m)return;const p=E.canvas.createSVGPoint();p.x=g.x;p.y=g.y;const abs=p.matrixTransform(m);state.menuOpen=true;state.menuGrip=g.id;
+ E.menu.style.left=Math.min(box.width-175,Math.max(10,abs.x-box.left+18))+'px';E.menu.style.top=Math.min(box.height-206,Math.max(42,abs.y-box.top+10))+'px';
+ E.menu.innerHTML=`<div class="canvasMenuHead">${escapeHtml(g.name)} · 可用行为</div><button data-menu-mode="S1拉伸">拉伸</button><button data-menu-mode="S2顶点编辑">顶点编辑</button><button data-menu-mode="S3拉长">拉长</button>`;
+ E.menu.classList.add('show');setResult('已打开当前夹点的多功能菜单；可以直接选择连续编辑命令。');
+ },480)}
+function galleryOpen(){q('gallery').classList.add('open');state.galleryEnv='all';state.galleryState='cold';renderGallery();}
+function galleryClose(){q('gallery').classList.remove('open')}
+function pickGalleryEnv(v){const envs=v[2].split(',');if(state.galleryEnv!=='all')return state.galleryEnv;return envs.includes('project')?'project':(envs.includes('element')?'element':'sketch')}
+function galleryVariant(v,displayEnv){
+ const [rawName,type,envs,action]=v; let title=rawName,glyphType=type,env=displayEnv,note=action,variant='原型显示';
+ const isStretch=/S1|S2|S3/.test(action); const isMove=/P1/.test(action); const isPolylineFlat=type==='flat';
+ if(displayEnv==='sketch'){
+   if(isPolylineFlat){glyphType='flat';title=rawName;variant='草图变体：空心扁矩形';note=/S1/.test(action)?'草图：多段线中点S1；二维整体移动P1':'草图：二维整体移动P1';}
+   else if(isStretch){glyphType='circle';title=rawName+'（草图空心圆变体）';variant='草图变体：几何拉伸统一为空心圆';note='草图轮廓拉伸：空心圆';}
+   else if(type==='dot'){glyphType='dot';variant='草图原型：点状视图控制';note=action;}
+   else if(type==='redpoint'){glyphType='redpoint';variant='草图原型：十字点定位';note=action;}
+   else {glyphType=type;variant='草图原型显示';note=action;}
+ } else if(displayEnv==='element'){
+   variant='构件编辑原型显示';
+ } else {
+   variant='项目环境原型显示';
+ }
+ return {title,glyphType,env,note,variant,envs};
+}
+function renderGallery(){
+ document.querySelectorAll('[data-gallery-env]').forEach(b=>b.classList.toggle('active',b.dataset.galleryEnv===state.galleryEnv));
+ document.querySelectorAll('[data-gstate]').forEach(b=>b.classList.toggle('accent',b.dataset.gstate===state.galleryState));
+ const filtered=GRIP_TYPES.filter(v=>state.galleryEnv==='all'||v[2].split(',').includes(state.galleryEnv));
+ const envText=state.galleryEnv==='all'?'原型优先（按主适用环境显示）':{project:'项目环境',element:'构件编辑',sketch:'草图环境'}[state.galleryEnv];
+ q('galleryInfo').textContent=`当前${filtered.length}/30种；显示策略：${envText}`;
+ q('galleryGrid').innerHTML=filtered.map(v=>{
+  const displayEnv=pickGalleryEnv(v); const meta=galleryVariant(v,displayEnv); const envLabelText=meta.envs.split(',').map(x=>({project:'项目',element:'构件',sketch:'草图'})[x]).join(' / ');
+  return `<div class="galleryCard"><svg viewBox="0 0 80 54">${glyph(meta.glyphType,40,27,{cold:'#003EFF',warm:'#0EFF0C',hot:'#FF0000'}[state.galleryState],displayEnv,1.42)}</svg><strong>${escapeHtml(meta.title)}</strong><small>${escapeHtml(meta.note)}</small><small>${escapeHtml(meta.variant)} ｜ 适用：${envLabelText}</small></div>`
+ }).join('');
+}
+function autoDemo(){if(isUnified()){unifiedAuto();return;}if(state.demoPlaying){clearAuto();toast('已暂停自动演示');return;}clearAuto();const sc=cur();state.demoPlaying=true;q('autoDemo').textContent='■ 停止演示';setStep(0);let seq=[];
+ function action(t,fn){seq.push({t,fn})}
+ action(250,()=>{if(!state.selected.length&&!isOverlap()){const obj=objectBase()[0];if(obj)state.selected=[obj.id]}else if(isOverlap()&&!state.selected.length){if(['objecttab','solidsobject'].includes(sc.id)){state.hoverAt='object';state.objIndex=0;}else state.selected=overlapIds();}setResult(['objecttab','solidsobject'].includes(sc.id)?'未选中对象：Tab首先切换重合对象候选。':'第1步：已确定演示对象和当前夹点候选。');setStep(1);renderCanvas();renderControls()});
+ if(state.module===0){
+  if(sc.id==='sketchmove'){action(1200,()=>{const g=getVisibleGrips().find(x=>x.role==='move'&&x.type==='flat');if(g){state.hoverGrip=g.id;renderCanvas();setResult('二维图元扁矩形：P1整体移动。')}});action(2200,()=>{const g=getVisibleGrips().find(x=>x.role==='move'&&x.type==='flat');if(g)gripClick(g)});action(3200,()=>{if(state.hot){state.pointer={x:state.hot.x+70,y:state.hot.y+35};renderCanvas();setResult('已进入热态，预览整对象平移而非修改顶点。')}});action(4400,()=>{if(state.hot)commit(state.pointer)});}
+  else if(sc.id==='professiongrips'){action(850,()=>controlChange('object','wall'));action(1550,()=>controlChange('object','beam'));action(2250,()=>controlChange('object','mep'));action(2900,()=>controlChange('object','site'));action(3500,()=>changeEnvironment('element'));action(4300,()=>changeEnvironment('sketch'));action(4850,()=>setResult('项目与构件编辑：同专业同造型实心拉伸；草图轮廓：空心圆形拉伸、扁矩形移动。'))}
+  else if(sc.id==='environment'||sc.id==='gallery'){action(1450,()=>changeEnvironment('element'));action(2700,()=>changeEnvironment('sketch'))}
+  else if(sc.id==='restrictions'){action(1450,()=>controlChange('restriction','pinned'));action(2700,()=>controlChange('restriction','size'))}
+  else if(sc.id==='cap'){action(1500,()=>controlChange('capability',false));action(2900,()=>controlChange('capability',true))}
+  else if(sc.id==='view'){action(1500,()=>{state.view='3d';q('viewSelect').value='3d';renderCanvas()});action(2800,()=>changeEnvironment('sketch'))}
+  else if(sc.id==='gallery'){action(3100,()=>galleryOpen())}
+  else action(1700,()=>{const g=getVisibleGrips()[0];if(g){state.hoverGrip=g.id;renderCanvas()}});
+ }else if(state.module===2){
+ if(sc.id==='wallLshared'){
+   action(950,()=>{state.hoverAt='center';const g=getCandidates()[0];if(g){state.hoverGrip=g.id;renderCanvas();setResult('第1步：L型墙连接处显示一个共享三角节点。')}});
+   action(1900,()=>{const g=getCandidates()[0];if(g)gripClick(g)});
+   action(2850,()=>{if(state.hot){state.pointer={x:state.hot.x+75,y:state.hot.y-45};renderCanvas();setResult('第3步：两段L型墙的连接端在同一预览中移动。')}});
+   action(4100,()=>{if(state.hot)commit(state.pointer)});
+  }
+  else if(sc.id==='twostagetab'){
+   action(850,()=>{state.hoverAt='object';state.objIndex=0;setResult('第一级：未选中对象；Tab选择重合的体A或体B。');renderCanvas()});
+   action(1650,()=>candidatesTab(true));
+   action(2400,()=>{objSelect(overlapIds()[state.objIndex]);setResult('已选中目标体。此时夹点才出现。')});
+   action(3150,()=>{objSelect(overlapIds()[1-state.objIndex],true);state.hoverAt='center';setResult('Shift追加另一个体，两个体的三角夹点重合。');renderCanvas()});
+   action(4150,()=>candidatesTab(true));
+   action(5100,()=>{const g=getCandidates()[state.candidateIndex];if(g)gripClick(g)});
+   action(5900,()=>{if(state.hot){state.pointer={x:state.hot.x+65,y:state.hot.y+5};renderCanvas();setResult('第二级结束：夹点热态只作用于当前体。')}});
+   action(6750,()=>{if(state.hot)commit(state.pointer)});
+  }
+  else if(sc.id==='cadshift'){
+   action(750,()=>{const gs=getVisibleGrips().filter(g=>g.role==='start');if(gs[0])gripClick(gs[0],true)});
+   action(1650,()=>{const gs=getVisibleGrips().filter(g=>g.role==='start');if(gs[1])gripClick(gs[1],true);setResult('Shift已经选中两个独立端点，出现紫色选中圈。')});
+   action(2650,()=>{const g=getVisibleGrips().find(g=>g.role==='start'&&state.multi.includes(g.id));if(g)gripClick(g)});
+   action(3750,()=>{if(state.hot){state.pointer={x:state.hot.x+75,y:state.hot.y+55};renderCanvas();setResult('两个端点按照同一位移更新预览。')}});
+   action(4750,()=>{if(state.hot)commit(state.pointer)});
+  }
+  else if(sc.id==='solidsobject'||sc.id==='objecttab'){action(1200,()=>{state.hoverAt='object';setResult('正在识别同一位置的两个候选对象，当前为对象A。');renderCanvas()});action(2200,()=>candidatesTab());action(3200,()=>{const ids=overlapIds();const id=ids[state.objIndex];objSelect(id);setResult('已确认对象：'+id+'。只显示该对象的夹点。')});}
+ else if(sc.id==='solidsgrip'){action(1200,()=>{state.hoverAt='center';const g=getCandidates()[0];state.hoverGrip=g.id;renderCanvas();setResult('已选中两个体对象，当前位置有两个独立三角夹点候选。')});action(2100,()=>candidatesTab());action(2950,()=>{const g=getCandidates()[state.candidateIndex];if(g)gripClick(g)});action(3850,()=>{if(state.hot){state.pointer={x:state.hot.x+70,y:state.hot.y+5};renderCanvas();setResult('热态：只预览当前体对象的拉伸，另一体保持原状。')}});action(4750,()=>{if(state.hot)commit(state.pointer)});}
+ else if(sc.id==='solidmulti'){action(1300,()=>{state.hoverAt='center';setResult('对象选择集包含两个体，但尚未选中任何夹点。');renderCanvas()});action(2250,()=>candidatesTab());action(3050,()=>{let g=getCandidates()[state.candidateIndex];if(g)gripClick(g,true);setResult('项目环境中Shift不能自由加选体夹点；对象多选与夹点多选属于不同机制。')});}
+ else {
+  action(1300,()=>{state.hoverAt='center';const cs=getCandidates();if(cs.length){state.hoverGrip=cs[0].id;setResult('当前候选：'+cs[0].name);renderCanvas();}});
+  action(2300,()=>candidatesTab());
+  if(sc.id==='mixed'||sc.id==='independent'||sc.id==='hotlock')action(3300,()=>candidatesTab());
+  if(sc.id==='shared')action(3450,()=>{const g=getCandidates()[0];if(g)gripClick(g)});
+  if(sc.id==='multi')action(3600,()=>{const gs=getVisibleGrips().filter(g=>g.role==='start');if(gs.length>1){gripClick(gs[0],true);gripClick(gs[1],true);setResult('已通过Shift选中2个独立端点。')}});
+ }
+ }else if(sc.id==='objectselection'){action(1200,()=>{objSelect('B',true);setResult('Shift选中第二条线身：对象集合A+B。')});action(2300,()=>{getVisibleGrips().filter(g=>g.role==='start').forEach(g=>gripClick(g,true));setResult('已Shift加选A、B两个端点；夹点选择集独立于对象选择集。')});action(3300,()=>{const g=getVisibleGrips().find(g=>g.role==='start');if(g)gripClick(g)});action(4250,()=>{if(state.hot){state.pointer={x:state.hot.x+60,y:state.hot.y-36};renderCanvas()}});action(5100,()=>{if(state.hot)commit(state.pointer)});}
+ else{
+  action(1250,()=>{let g=getVisibleGrips().find(g=>!g.disabled&&(sc.id==='single'?g.single==='flip':sc.id==='range'?g.single==='range':sc.id==='mep'?g.command==='create':g.role==='end'||g.role==='dimension'||g.role==='right'||g.role==='move'))||getVisibleGrips()[0];if(!g)return;state.hoverGrip=g.id;renderCanvas();gripClick(g)});
+  action(2300,()=>{if(state.hot){state.pointer={x:state.hot.x+88,y:state.hot.y+20};setResult('当前仅更新编辑预览，尚未提交修改。');renderCanvas()}});
+  action(3300,()=>{if(state.hot)commit(state.pointer||{x:state.hot.x+88,y:state.hot.y+20})});
+ }
+ let max=Math.max(...seq.map(x=>x.t),0);
+ seq.forEach(({t,fn})=>state.autoTimers.push(setTimeout(()=>{if(!state.demoPlaying)return;fn()},t)));
+ state.autoTimers.push(setTimeout(()=>{state.demoPlaying=false;q('autoDemo').textContent='▶ 自动演示'},max+950));
+}
+function handleKey(e){if(isUnified())return;const element=document.activeElement;const input=element?.tagName==='INPUT'||element?.tagName==='SELECT'||element?.tagName==='TEXTAREA';
+ if(e.key==='Escape'){
+ if(q('gallery').classList.contains('open')){e.preventDefault();galleryClose();return}
+ if(state.menuOpen){e.preventDefault();hideMenu();toast('已关闭当前夹点菜单');return}
+ if(cancelHot()){e.preventDefault();return}
+ return;
+ }
+ if(input||q('gallery').classList.contains('open'))return;
+ if((e.key==='Tab')&&!state.menuOpen){e.preventDefault();candidatesTab();return}
+ if(e.ctrlKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}
+ if(state.hot&&(e.key===' '||e.key==='Enter')){e.preventDefault();
+ if(e.key===' '){state.hot.mode=state.hot.mode==='move'?'stretch':'move';toast('编辑模式：'+(state.hot.mode==='move'?'移动':'拉伸'));setResult('已在当前夹点支持的编辑模式中切换（示例）。');return;}
+ if(state.pointer)commit(state.pointer);else toast('请先通过鼠标指定有效目标',true);return;
+ }
+}
+E.nav.addEventListener('click',e=>{const b=e.target.closest('[data-mod]');if(b)setScene(+b.dataset.mod,0)});
+E.sceneTabs.addEventListener('click',e=>{const b=e.target.closest('[data-scene]');if(b)setScene(state.module,+b.dataset.scene)});
+document.querySelectorAll('[data-env]').forEach(b=>b.addEventListener('click',()=>changeEnvironment(b.dataset.env)));
+q('viewSelect').addEventListener('change',e=>{if(state.hot)cancelHot();state.view=e.target.value;state.hoverGrip=null;state.multi=[];setResult('视图已切换，当前可显示的夹点及操作方向已重新评估。');renderGuide();renderCanvas()});
+E.ctrl.addEventListener('change',e=>{const el=e.target.closest('[data-control]');if(el)controlChange(el.dataset.control,el.type==='checkbox'?el.checked:el.value)});
+E.ctrl.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='gallery')galleryOpen();if(b.dataset.action==='tab'){state.hoverAt=state.selected.length?'center':'object';candidatesTab(true)}if(b.dataset.action==='shiftBoth'){if(state.env!=='sketch'){toast('仅草图环境允许');return;}if(state.selected.length<2)state.selected=overlapIds();const gs=getVisibleGrips().filter(x=>x.role==='start');for(const g of gs){if(!state.multi.includes(g.id))gripClick(g,true)}setStep(2);setResult('Shift已加选2个外侧端点。点击任一紫色选中端点进入热态。');renderControls()}if(b.dataset.action==='clearMulti'){state.multi=[];setResult('已清除主动多夹点选择集合');renderCanvas()}if(b.dataset.action==='confirmObject'){const ids=overlapIds();const id=ids[state.objIndex];objSelect(id);setResult('已选中'+id+'，现在可继续Shift追加对象或Tab选择夹点。')}if(b.dataset.action==='range'){state.range=state.range==='2D'?'3D':'2D';setResult(`当前为${state.range}范围`);renderCanvas();renderControls()}});
+E.canvas.addEventListener('click',e=>{
+ const gEl=e.target.closest('[data-gid]');if(gEl){const g=state.gripMap.get(gEl.dataset.gid);if(g){gripClick(g,e.shiftKey);E.canvas.focus();return}}
+ if(state.hot){commit(svgPoint(e));E.canvas.focus();return;}
+ if(isOverlap()&&!state.selected.length&&state.hoverAt==='object'){const ids=overlapIds();const id=ids[state.objIndex];objSelect(id);E.canvas.focus();return}
+ const obj=e.target.closest('[data-obj]');if(obj){objSelect(obj.dataset.obj,e.shiftKey);E.canvas.focus();return}
+ state.hoverGrip=null;state.hoverAt='';hideMenu();E.canvas.focus();renderCanvas();
+});
+E.canvas.addEventListener('pointermove',e=>{if(!state.hot)return;state.pointer=svgPoint(e);renderCanvas()});
+function showGripHover(g,el){
+  state.hoverGrip=g.id;state.hoverAt=g.role==='center'?'center':'';
+  el.style.setProperty('--cold','#0EFF0C');
+  for(const o of E.canvas.querySelectorAll('[data-obj]'))o.classList.toggle('hoverObject',g.shared?['A','B'].includes(o.dataset.obj):o.dataset.obj===g.oid);
+  const tip=q('hoverInfo'); const svgMatrix=E.canvas.getScreenCTM();if(svgMatrix){const p=E.canvas.createSVGPoint();p.x=g.x;p.y=g.y;const absolute=p.matrixTransform(svgMatrix);const box=E.workspace.getBoundingClientRect();tip.style.left=Math.min(box.width-225,Math.max(8,absolute.x-box.left+23))+'px';tip.style.top=Math.max(34,absolute.y-box.top-46)+'px'}
+  tip.textContent=g.disabled?g.name+' · 禁用：无法激活':g.shared?'共享夹点 · 2个对象 · 联合拉伸':g.name+' · '+g.action;
+  tip.hidden=false;
+  if(!state.justCommitted)setResult(g.disabled?'禁用夹点：当前对象不可编辑。':g.shared?'共享夹点：本次操作同时影响两段连接墙/线。':`当前候选：${g.name}；${g.action}。单击后进入相应操作。`);
+  scheduleMenu(g);
+}
+function clearGripHover(){state.justCommitted=false;const old=E.canvas.querySelector('[data-gid="'+state.hoverGrip+'"]');if(old)old.style.removeProperty('--cold');for(const o of E.canvas.querySelectorAll('[data-obj]'))o.classList.remove('hoverObject');q('hoverInfo').hidden=true;state.hoverGrip=null;state.hoverAt=''}
+E.canvas.addEventListener('mouseover',e=>{
+ if(state.hot)return;const gEl=e.target.closest('[data-gid]');if(!gEl){if(isOverlap()&&!state.selected.length&&e.target.closest('[data-obj]')){const p=svgPoint(e);const cx=state.object==='solidOverlap'?699:590,cy=state.object==='solidOverlap'?317:350;if((state.object==='solidOverlap'&&(p.x>=410&&p.x<=755&&p.y>=135&&p.y<=428))||(state.object==='overlap'&&Math.hypot(p.x-cx,p.y-cy)<48)){state.hoverAt='object';q('hoverInfo').hidden=false;q('hoverInfo').textContent=(state.object==='solidOverlap'?'重合体对象':state.object==='wallL'?'L型墙对象':'重合线对象')+' · 按Tab切换 A / B';q('hoverInfo').style.left='53%';q('hoverInfo').style.top='43%'}}return;}const id=gEl.dataset.gid;if(state.hoverGrip===id)return;const g=state.gripMap.get(id);if(!g)return;showGripHover(g,gEl);
+});
+E.canvas.addEventListener('mouseout',e=>{
+ if(state.hot)return;const old=e.target.closest('[data-gid]');if(!old||!old.isConnected)return;
+ const related=e.relatedTarget;if(related instanceof Element&&related.closest('[data-gid]')?.dataset.gid===old.dataset.gid)return;
+ if(!state.menuOpen){clearTimeout(menuTimer);clearGripHover()}
+});
+E.menu.addEventListener('mouseenter',()=>{state.hoveringMenu=true;clearTimeout(menuTimer)});
+E.menu.addEventListener('mouseleave',()=>{state.hoveringMenu=false;menuTimer=setTimeout(()=>{hideMenu();state.hoverGrip=null;renderCanvas()},260)});
+E.menu.addEventListener('click',e=>{const b=e.target.closest('[data-menu-mode]');if(!b)return;const g=state.gripMap.get(state.menuGrip);if(!g)return;gripClick(g,false);if(state.hot){state.hot.action=b.dataset.menuMode;setResult('已通过菜单选择“'+b.dataset.menuMode+'”，无需再单击夹点本体，直接进入热态。');}hideMenu();renderCanvas();E.canvas.focus()});
+document.addEventListener('keydown',handleKey,{capture:false});
+q('autoDemo').addEventListener('click',autoDemo);q('resetScene').addEventListener('click',reset);q('topReset').addEventListener('click',reset);q('topUndo').addEventListener('click',undo);q('openGallery').addEventListener('click',galleryOpen);q('rGallery').addEventListener('click',galleryOpen);q('smallGallery').addEventListener('click',galleryOpen);document.querySelectorAll('[data-gstate]').forEach(b=>b.addEventListener('click',()=>{state.galleryState=b.dataset.gstate;renderGallery()}));q('galleryClose').addEventListener('click',galleryClose);q('gallery').addEventListener('click',e=>{if(e.target.id==='gallery')galleryClose()});document.querySelectorAll('[data-gallery-env]').forEach(b=>b.addEventListener('click',()=>{state.galleryEnv=b.dataset.galleryEnv;renderGallery()}));
+q('focusBtn').addEventListener('click',()=>{E.app.classList.toggle('focusMode');q('focusBtn').textContent=E.app.classList.contains('focusMode')?'⛶ 返回标准界面':'⛶ 放大画布';E.canvas.focus()});
+q('fitBtn').addEventListener('click',()=>toast('画布已适配当前窗口'));q('viewGrid').addEventListener('click',()=>{state.gridOn=!state.gridOn;E.workspace.style.backgroundImage=state.gridOn?'':'none';q('viewGrid').classList.toggle('active',state.gridOn)});
+q('rSelect').addEventListener('click',()=>{state.tool='select';toast('当前为对象选择模式')});q('rMove').addEventListener('click',()=>{state.tool='move';setResult('请选择移动夹点；单击激活后再指定目标。')});q('rLine').addEventListener('click',()=>{setScene(1,1);changeEnvironment('sketch');toast('已进入二维线段夹点编辑演示')});
+for(const b of document.querySelectorAll('.ribTab'))b.addEventListener('click',()=>{document.querySelectorAll('.ribTab').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(b.textContent==='草图')changeEnvironment('sketch');else if(b.textContent==='建筑'||b.textContent==='结构')changeEnvironment('project');toast('工具功能区已切换至：'+b.textContent)});
+window.addEventListener('hashchange',()=>{const h=new URLSearchParams(location.hash.replace(/^#/,''));const m=MODS.findIndex(v=>v.id===h.get('module'));if(m>=0){const s=MODS[m].scenes.findIndex(v=>v.id===h.get('scene'));if(m!==state.module||(s>=0&&s!==state.scene))setScene(m,Math.max(0,s))}});
+
+// === V4.1: five-stage Tab scenario. Reuses the same three polygons in every stage. ===
+const U_STAGES=[
+ {name:'① 对象候选',what:'鼠标位于三个图形交叠的识别区域，按 Tab 在 A / B / C 对象间切换；单击图形或识别区域确认当前候选。',short:'对象层：Tab → 矩形A / 矩形B / 三角形C'},
+ {name:'② 对象内夹点',what:'保持同一画布，当前对象为独立矩形A。Tab按四个顶点→中心扁矩形的固定顺序高亮A的夹点，单击当前夹点可以进入热态。',short:'夹点层：Tab → A的5个夹点'},
+ {name:'③ 重合夹点',what:'矩形A右上顶点和矩形B左上顶点完全重合，但没有共享关系。只有鼠标悬停到公共顶点后才显示“重合夹点 ×2”提示，随后Tab在该位置候选间循环。',short:'重合层：Tab → A右上角 / B左上角'},
+ {name:'④ 编辑目标',what:'悬停公共顶点、按Tab选择矩形B候选，再单击进入热态，松开鼠标后移动指定目标，再次单击提交。只有矩形B顶点改变，矩形A不变。',short:'单击激活 → 松开 → 移动 → 再单击；只修改B'},
+ {name:'⑤ Shift多选',what:'同一个画布中，Shift单击A左上、B右上、C顶端三个独立夹点。再单击任一已选夹点，按同一位移量预览并提交三个顶点。',short:'Shift加选3个独立顶点 → 同一位移提交'}
+];
+function isUnified(){return state.object==='unifiedTab'}
+function initUnified(){if(!isUnified())return;state.unified={stage:0,objectIndex:0,gripIndex:0,overlapIndex:0,focus:'objects',selectedBefore:[],hint:'',candidateLocked:false,overlapHovered:false};state.selected=[];state.multi=[];state.hot=null;state.pointer=null;state.overrides={};unifiedStage(0)}
+function u(){if(!state.unified)state.unified={stage:0,objectIndex:0,gripIndex:0,overlapIndex:0,focus:'objects'};return state.unified}
+function unifiedShape(o){return o.pts.map(p=>p.join(',')).join(' ')}
+function uObjs(){return getObjects()}
+function ugFor(o){
+ const a=[],ps=o.pts;
+ for(let i=0;i<ps.length;i++){
+  const p=ps[i];a.push({key:o.id+':v'+i,oid:o.id,role:'v'+i,idx:i,x:p[0],y:p[1],type:'circle',action:'S1顶点拉伸',label:vertexName(o,i)});
+ }
+ // UA/UB 是独立矩形，UC 为独立三角形：不将其当作多段线。
+ const cx=ps.reduce((sum,p)=>sum+p[0],0)/ps.length,cy=ps.reduce((sum,p)=>sum+p[1],0)/ps.length;
+ a.push({key:o.id+':move',oid:o.id,role:'move',x:cx,y:cy,type:'flat',action:'P1整体移动',label:'中心扁矩形移动夹点'});
+ return a;
+}
+function vertexName(o,i){if(o.id==='UC')return ['上顶点','右下顶点','左下顶点'][i]||'顶点';return ['左上顶点','右上顶点','右下顶点','左下顶点'][i]||'顶点'}
+function edgeName(o,i){return o.id==='UC'?['右斜边中点','下边中点','左斜边中点'][i]:['上边中点','右边中点','下边中点','左边中点'][i]}
+function uStageGrips(){const t=u().stage,objs=uObjs();if(t===0)return[];if(t===1)return ugFor(objs[0]);if(t===2||t===3){const a=ugFor(objs[0]).find(g=>g.role==='v1'),b=ugFor(objs[1]).find(g=>g.role==='v0');if(Math.hypot(a.x-b.x,a.y-b.y)<=2)return[a,b];return ugFor(objs[0]).concat(ugFor(objs[1]));}return objs.flatMap(ugFor)}
+function unifiedStage(next){if(!isUnified())return;const x=u();next=Math.max(0,Math.min(4,next));state.hot=null;state.pointer=null;state.multi=[];state.hoverGrip=null;state.hoverAt='';hideMenu();x.stage=next;x.gripIndex=0;x.overlapIndex=0;x.objectIndex=0;x.focus=next===0?'objects':next===1?'grips':next===4?'multi':'overlap';x.candidateLocked=false;x.overlapHovered=false;
+ if(next===0)state.selected=[];
+ else if(next===1)state.selected=['UA'];
+ else if(next===2||next===3)state.selected=['UA','UB'];
+ else state.selected=['UA','UB','UC'];
+ state.activeStep=next;setResult(U_STAGES[next].what);unifiedGuide();unifiedRender();E.canvas.focus();}
+function unifiedGuide(){if(!isUnified())return;const x=u(),st=U_STAGES[x.stage];q('lessonHeadline').textContent=st.name+' · '+(state.hot?'热态预览→再次单击确认':'按Tab / Shift实际操作');q('lessonSub').textContent=st.short;q('guideHint').textContent=st.what;q('stageSubtitle').textContent='草图环境 · 同一图形场景 / '+st.name;
+ E.steps.querySelectorAll('.stepItem').forEach((e,i)=>{e.classList.add('unifiedStep');e.classList.toggle('active',i===x.stage);e.classList.toggle('done',i<x.stage);e.dataset.ustep=String(i);e.title='点击切换到第'+(i+1)+'步';});renderControls();}
+function unifiedControls(){const x=u();const gr=uStageGrips();let status='';if(x.stage===0){status='对象候选 '+(x.objectIndex+1)+'/3：'+['矩形 A','矩形 B','三角形 C'][x.objectIndex]}else if(x.stage===1){const g=gr[x.gripIndex];status='A的第 '+(x.gripIndex+1)+'/5 个夹点：'+g?.label+' · '+g?.action;}else if(x.stage===2||x.stage===3){const g=gr[Math.min(x.overlapIndex,gr.length-1)];status=gr.length!==2?'编辑后已分离：两个夹点不再重合':!x.overlapHovered?'尚未触发：请将鼠标悬停到A/B公共顶点':'独立重合候选 '+(x.overlapIndex+1)+'/2：'+(g?.oid==='UA'?'矩形A 右上顶点':'矩形B 左上顶点');}else status='已加选 '+state.multi.length+'/3 个夹点';
+ E.ctrl.innerHTML=`<div class="unifiedMiniStat"><strong>${escapeHtml(status)}</strong></div><div class="unifiedControl"><button data-unified="tab">模拟 Tab</button><button data-unified="pick">${x.stage===0?'确认当前候选对象':x.stage===4?'Shift依次加选':'激活当前候选夹点'}</button></div><div class="unifiedControl"><button data-unified="prev" ${x.stage===0?'disabled':''}>← 上一步</button><button data-unified="next" ${x.stage===4?'disabled':''}>下一步 →</button></div><div class="unifiedControl"><button data-unified="all">▶ 一键串讲五步</button></div><div class="unifiedChoice"><b>当前操作层级</b>${escapeHtml(U_STAGES[x.stage].short)}<br/>${x.stage===2||x.stage===3?'当前两夹点只有坐标重合，不存在共享关系。':x.stage===4?'项目环境不开放这一通用多夹点操作；本演示位于草图。':'三个图形在全部五步中保持相同形状与位置。'}</div>`;
+}
+function uStageHint(){const x=u();if(state.hot)return state.hot.oids.length>1?'热态：三个顶点同步预览，第二次单击共同确认。':'热态：只改变目标对象的当前顶点，第二次单击确认。';if(x.stage===0)return 'Tab在三个对象之间循环；单击当前高亮对象确认。';if(x.stage===1)return 'Tab只在矩形A的5个夹点之间循环，高亮不会激活夹点。';if(x.stage===2)return '先把鼠标悬停到A/B公共顶点。检测到两个独立夹点时才提示Tab；再按Tab循环选择。';if(x.stage===3)return '先悬停公共顶点，看到重合候选提示后按Tab选矩形B；单击进入热态，只更新B。';return '按住Shift点击三个紫色提示顶点，再单击一个已选点并指定统一目标。'}
+function unifiedRender(){if(!isUnified())return;const x=u(),objs=uObjs(),gr=uStageGrips(),stage=x.stage;const active=stage===1?gr[x.gripIndex]:stage===2||stage===3?gr[x.overlapIndex]:null;
+ const focusId=stage===0?['UA','UB','UC'][x.objectIndex]:((stage===2||stage===3)&&!x.overlapHovered?null:active?.oid);let out=`<rect x="166" y="125" width="783" height="446" rx="9" class="uSketchZone"/><g pointer-events="none"><text x="184" y="149" fill="#bb945d" font-size="12">单一固定绘图场景 · 三对象无共享几何关系</text></g>`;
+ const objOrder=objs.slice().sort((a,b)=>a.id==='UC'?-1:b.id==='UC'?1:0);
+ for(const o of objOrder){const high=focusId===o.id||(state.hot?.oids?.includes(o.id)),sel=state.selected.includes(o.id);const outline=high?'#e78533':sel?'#4888cb':'#8093a8';const pts=unifiedShape(o);const isTri=o.id==='UC';out+=`<g data-uobj="${o.id}" class="uObjPick ${high?'uEmphasis':''}"><polygon points="${pts}" fill="${isTri?'#ecf3df':'#e8f1fa'}" fill-opacity="${stage===0?'.25':'.42'}" stroke="${outline}" stroke-width="${high?'6':sel?'3.8':'2.7'}" stroke-linejoin="round"/>${high?`<polygon class="uObjBack" points="${pts}" fill="none" stroke="#f0af6e" stroke-dasharray="7 4" stroke-width="8" opacity=".5"/>`:''}</g>`;}
+ const names=objs.map(o=>{const mid=o.pts.reduce((s,p)=>[s[0]+p[0],s[1]+p[1]],[0,0]).map(s=>s/o.pts.length);return `<text class="uOverlayLabel" x="${mid[0]}" y="${o.id==='UC'?465:330}" text-anchor="middle">${o.label}</text>`});out+=names.join('');
+ // Dedicated object-level hotspot: the common vertical boundary is shared on-screen, but NOT topologically shared.
+ if(stage===0){const o=['UA','UB','UC'][x.objectIndex];out+=`<g data-uhotspot="object"><rect x="536" y="288" width="60" height="86" rx="10" fill="#e7f3ff" fill-opacity=".45" stroke="#9cbfe7" stroke-dasharray="5 4" stroke-width="2"/><text x="566" y="281" text-anchor="middle" fill="#315c94" font-size="12">对象命中区</text></g>`;}
+ if(stage===2||stage===3){const a=ugFor(objs[0]).find(g=>g.role==='v1'),b=ugFor(objs[1]).find(g=>g.role==='v0');const overlap=Math.hypot(a.x-b.x,a.y-b.y)<=2;
+  if(overlap&&x.overlapHovered&&!state.hot)out+=`<g pointer-events="none"><circle cx="${a.x}" cy="${a.y}" r="29" fill="none" stroke="#dc9b37" stroke-dasharray="4 4" stroke-width="2"/><text x="${a.x+30}" y="${a.y-33}" font-size="13" fill="#b5751e">检测到独立重合夹点 ×2 · Tab切换</text></g>`;
+  if(!overlap)out+=`<text x="595" y="197" font-size="14" fill="#358455">已分离：不再构成重合候选</text>`;
+ }
+ if(stage===4){for(const [ix,id,role] of [[0,'UA','v0'],[1,'UB','v1'],[2,'UC','v0']]){const gg=gr.find(g=>g.oid===id&&g.role===role);if(!gg)continue;out+=`<g pointer-events="none"><circle cx="${gg.x}" cy="${gg.y}" r="23" stroke="#9f80c3" fill="none" stroke-dasharray="4 4" stroke-width="1.8"/><text x="${gg.x+17}" y="${gg.y-19}" fill="#8056a8" font-size="12">Shift ${ix+1}</text></g>`;}}
+ let show=gr;if((stage===2||stage===3)&&gr.length===2)show=[gr[x.overlapIndex]];
+ for(const g of show){const isActive=stage===1&&active?.key===g.key||(stage===2||stage===3)&&x.overlapHovered&&active?.key===g.key;const isSelected=state.multi.includes(g.key);const hot=state.hot&&(state.hot.key===g.key||state.hot.keys?.includes(g.key));const color=hot?'#FF0000':isActive?'#0EFF0C':'#003EFF';const dia=g.type==='flat'?21:19;out+=`<g class="unifiedGrip" data-ugrip="${g.key}" transform="translate(${g.x} ${g.y})">${isSelected?'<circle class="uSelected" r="21"/>':''}${glyph(g.type,0,0,color,'sketch',1.0)}<circle class="gripTarget" r="${dia}"/></g>`;}
+ if(state.hot&&state.pointer) {const dx=state.pointer.x-state.hot.x,dy=state.pointer.y-state.hot.y;for(const id of state.hot.oids){const o=objs.find(o=>o.id===id);if(!o)continue;const ps=o.pts.map(p=>[...p]);const indices=state.hot.keys?.filter(k=>k.startsWith(id+':')).map(k=>Number(k.split(':')[1].replace('v','')))||[state.hot.idx];if(state.hot.keys?.includes(id+':move')){for(const p of ps){p[0]+=dx;p[1]+=dy;}}
+  else for(const i of indices)if(Number.isInteger(i)&&ps[i]){ps[i][0]+=dx;ps[i][1]+=dy;}
+  out+=`<polygon class="preview" points="${ps.map(p=>p.join(',')).join(' ')}"/>`;}}
+ // Candidate badge and in-canvas prompt
+ if(stage===0)out+=`<g class="uBadge" transform="translate(708 170)"><rect width="212" height="58" rx="7"/><text x="12" y="23">对象候选 ${x.objectIndex+1}/3</text><text x="12" y="43">${['矩形 A','矩形 B','三角形 C'][x.objectIndex]}</text></g>`;
+ if(!state.hot&&(stage===1||(stage===2||stage===3)&&x.overlapHovered)&&active){const who=active.oid==='UA'?'矩形 A':active.oid==='UB'?'矩形 B':'三角形 C';out+=`<g class="uBadge" transform="translate(700 166)"><rect width="222" height="62" rx="7"/><text x="12" y="23">${stage===1?'对象内夹点 '+(x.gripIndex+1)+'/5':'独立重合 '+(x.overlapIndex+1)+'/2'}</text><text x="12" y="43">${who} · ${active.label}</text></g>`;}
+ E.canvas.innerHTML=out;q('canvasLegend').innerHTML=`<span><strong>${U_STAGES[stage].name}</strong></span><span>空心圆：顶点S1 ｜ 中心空心扁矩形：P1整体移动</span><span>${state.hot?'热态：二次单击确认':'Tab候选 · Shift加选 · Esc取消'}</span>`;
+ q('lessonHeadline').textContent=U_STAGES[stage].name+(state.hot?' · 热态操作中':' · 同一图形场景');q('lessonSub').textContent=uStageHint();q('stageSubtitle').textContent='草图环境 · '+U_STAGES[stage].name;unifiedControls();}
+// 自动演示用相同的悬停状态事件；手动模式仍必须鼠标实际悬停。
+function unifiedDemoHover(){if(!isUnified()||![2,3].includes(u().stage))return;const g=uStageGrips();if(g.length===2){u().overlapHovered=true;u().overlapIndex=0;setResult('鼠标已悬停到公共顶点：检测到两个独立重合夹点，按Tab切换。');unifiedRender();}}
+function unifiedTab(){if(!isUnified())return;const x=u(),gr=uStageGrips();if(state.hot){setResult('热态已锁定当前操作目标，Tab不能切换候选。按Esc取消或再次单击确认。');return;}if(x.stage===0){x.objectIndex=(x.objectIndex+1)%3;setResult('对象候选 '+(x.objectIndex+1)+'/3：'+['矩形 A','矩形 B','三角形 C'][x.objectIndex]+'；当前仅切换高亮，尚未选中对象。');}else if(x.stage===1){x.gripIndex=(x.gripIndex+1)%gr.length;const g=gr[x.gripIndex];setResult('矩形 A 夹点 '+(x.gripIndex+1)+'/9：'+g.label+'（'+g.action+'）；未激活，不改变对象。');}else if(x.stage===2||x.stage===3){if(gr.length===2&&x.overlapHovered){x.overlapIndex=(x.overlapIndex+1)%2;const g=gr[x.overlapIndex];setResult('重合夹点 '+(x.overlapIndex+1)+'/2：'+(g.oid==='UA'?'矩形A右上顶点':'矩形B左上顶点')+'；这里只因位置重合，两个对象不联动。');}
+ else if(gr.length===2){setResult('请将鼠标悬停在A/B公共顶点（两个夹点重合处），看到“重合 ×2”提示后，再按Tab切换。');}
+ else setResult('修改后两夹点已分离，Tab不再按该位置的重合候选循环。');}else setResult('本阶段使用Shift+单击加选夹点，Tab不切换夹点选择集合。');unifiedRender();}
+function unifiedSelectGrip(g,shift=false){const x=u();if(x.stage===4&&shift){const allowed=new Set(['UA:v0','UB:v1','UC:v0']);if(!allowed.has(g.key)){setResult('本场景请Shift选中带紫色编号的三个独立端点。');return;}state.multi.includes(g.key)?state.multi=state.multi.filter(k=>k!==g.key):state.multi.push(g.key);setResult('Shift夹点选择集 '+state.multi.length+'/3：'+state.multi.map(k=>k.replace('UA','矩形A').replace('UB','矩形B').replace('UC','三角形C')).join('、')+'。松开Shift后单击一个已选端点开始统一编辑。');unifiedRender();return;}if(shift){setResult('Shift加选仅在第⑤步演示；当前请按Tab或单击候选夹点。');return;}if(x.stage===0){setResult('请先按Tab选择对象候选，或点击图形确认，再进入下一步。');return;}
+ const keys=x.stage===4&&state.multi.includes(g.key)?state.multi.slice():[g.key];const oids=[...new Set(keys.map(k=>k.split(':')[0]))];state.hot={key:g.key,keys,oids,idx:g.idx,x:g.x,y:g.y,stage:x.stage};state.pointer=null;setResult(oids.length>1?'已激活 '+keys.length+' 个已选夹点；松开鼠标后移动，三个端点同步预览。':'已激活 '+g.label+'（'+g.oid+'），单击激活后已松开鼠标；现在移动指定目标。');unifiedRender();}
+function unifiedCommit(p){const h=state.hot;if(!h)return;const dx=p.x-h.x,dy=p.y-h.y;if(Math.hypot(dx,dy)<5){setResult('目标与原位置距离太近，请移动鼠标指定有效目标。');return;}state.undo.push(snapshot());state.redo=[];const objs=uObjs();for(const id of h.oids){const o=objs.find(v=>v.id===id);if(!o)continue;const pts=o.pts.map(a=>a.slice());if(h.keys.includes(id+':move')){for(const p of pts){p[0]+=dx;p[1]+=dy;}}
+  else for(const k of h.keys.filter(k=>k.startsWith(id+':'))){const idx=Number(k.split(':')[1].replace('v',''));if(Number.isInteger(idx)&&pts[idx]){pts[idx][0]+=dx;pts[idx][1]+=dy;}}
+  state.overrides[id]={pts};}state.hot=null;state.pointer=null;state.multi=[];if(u().stage===3){u().overlapHovered=false;const a=uObjs()[0].pts[1],b=uObjs()[1].pts[0];setResult(`提交完成：仅矩形B左上端点更新，矩形A的右上顶点保持原位置。现在两端点${Math.hypot(a[0]-b[0],a[1]-b[1])<=2?'仍重合':'已分离，重合提示不再出现'}。Ctrl+Z可撤销。`);}else if(u().stage===4){setResult('提交完成：三个来自不同对象的选中夹点使用同一位移量更新，Ctrl+Z可一次撤销全部。');}else setResult('已确认当前编辑，只更新目标对象。');unifiedRender();}
+function unifiedPick(){const x=u(),gr=uStageGrips();if(x.stage===0){const id=['UA','UB','UC'][x.objectIndex];state.selected=[id];setResult('已确认对象：'+({UA:'矩形 A',UB:'矩形 B',UC:'三角形 C'})[id]+'。下一步可在同一画布中按Tab选择该对象的夹点。');unifiedRender();return;}if(x.stage===4){const allowed=['UA:v0','UB:v1','UC:v0'];const k=allowed.find(k=>!state.multi.includes(k));if(k){const g=gr.find(g=>g.key===k);unifiedSelectGrip(g,true);}else{const g=gr.find(g=>g.key===state.multi[0]);unifiedSelectGrip(g,false);}return;}if((x.stage===2||x.stage===3)&&!x.overlapHovered){setResult('请先将鼠标悬停到A/B公共顶点，让系统识别重合候选后再激活。');return;}
+ const grCurrent=x.stage===1?gr[x.gripIndex]:gr[x.overlapIndex];if(grCurrent)unifiedSelectGrip(grCurrent,false);}
+function unifiedReset(){state.overrides={};state.undo=[];state.redo=[];unifiedStage(0);setResult('已重置同一画布的三个对象，可从第一步重新演示。');}
+function unifiedAuto(){if(!isUnified())return;if(state.demoPlaying){clearAuto();return;}clearAuto();state.demoPlaying=true;q('autoDemo').textContent='■ 停止演示';const st=u().stage;unifiedStage(st);state.demoPlaying=true;q('autoDemo').textContent='■ 停止演示';const events=[];const add=(ms,fn)=>events.push([ms,fn]);
+ if(st===0){add(600,unifiedTab);add(1250,unifiedTab);add(1950,unifiedTab);add(2800,unifiedPick);}
+ if(st===1){add(600,unifiedTab);add(1300,unifiedTab);add(2050,unifiedTab);add(2900,unifiedTab);}
+ if(st===2||st===3){add(250,unifiedDemoHover);add(650,unifiedTab);add(1450,unifiedTab);add(2200,unifiedTab);if(st===3){add(2700,()=>{const g=uStageGrips()[u().overlapIndex];if(g)unifiedSelectGrip(g)});add(3550,()=>{if(state.hot){state.pointer={x:state.hot.x+80,y:state.hot.y+48};unifiedRender();}});add(4550,()=>{if(state.hot)unifiedCommit(state.pointer)});}}
+ if(st===4){add(650,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UA:v0'),true));add(1350,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UB:v1'),true));add(2050,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UC:v0'),true));add(2800,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UA:v0')));add(3600,()=>{if(state.hot){state.pointer={x:state.hot.x+65,y:state.hot.y+43};unifiedRender();}});add(4500,()=>{if(state.hot)unifiedCommit(state.pointer)});}
+ events.forEach(([ms,fn])=>state.autoTimers.push(setTimeout(()=>{if(state.demoPlaying)fn()},ms)));const max=Math.max(...events.map(v=>v[0]));state.autoTimers.push(setTimeout(()=>{state.demoPlaying=false;q('autoDemo').textContent='▶ 自动演示'},max+900));}
+function unifiedAutoAll(){if(!isUnified())return;if(state.demoPlaying){clearAuto();return;}clearAuto();unifiedReset();state.demoPlaying=true;q('autoDemo').textContent='■ 停止演示';const queue=[];const schedule=(time,fn)=>queue.push([time,fn]);
+ schedule(700,unifiedTab);schedule(1400,unifiedTab);schedule(2100,unifiedTab);schedule(2700,unifiedPick);
+ schedule(3600,()=>unifiedStage(1));schedule(4150,unifiedTab);schedule(4680,unifiedTab);schedule(5200,unifiedTab);
+ schedule(6000,()=>unifiedStage(2));schedule(6250,unifiedDemoHover);schedule(6600,unifiedTab);schedule(7200,unifiedTab);schedule(7800,unifiedTab);
+ schedule(8600,()=>unifiedStage(3));schedule(8750,unifiedDemoHover);schedule(9000,unifiedTab);schedule(9700,()=>{const g=uStageGrips()[u().overlapIndex];if(g)unifiedSelectGrip(g)});
+ schedule(10400,()=>{if(state.hot){state.pointer={x:state.hot.x+70,y:state.hot.y+40};unifiedRender()}});
+ schedule(11400,()=>{if(state.hot)unifiedCommit(state.pointer)});
+ schedule(12700,()=>unifiedStage(4));schedule(13200,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UA:v0'),true));
+ schedule(13800,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UB:v1'),true));
+ schedule(14400,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UC:v0'),true));
+ schedule(15200,()=>unifiedSelectGrip(uStageGrips().find(g=>g.key==='UA:v0')));
+ schedule(16000,()=>{if(state.hot){state.pointer={x:state.hot.x+65,y:state.hot.y-32};unifiedRender()}});
+ schedule(17000,()=>{if(state.hot)unifiedCommit(state.pointer)});
+ queue.forEach(([ms,fn])=>state.autoTimers.push(setTimeout(()=>{if(state.demoPlaying)fn()},ms)));
+ state.autoTimers.push(setTimeout(()=>{state.demoPlaying=false;q('autoDemo').textContent='▶ 自动演示';setResult('五步串讲结束：同一组三图形展示了对象选择、夹点切换、独立重合、定向修改和Shift多选。点击“重置”可重新体验。')},18000));
+}
+function unifiedCanvasClick(e){if(!isUnified())return;const el=e.target.closest('[data-ugrip]');if(el){const gr=uStageGrips().find(g=>g.key===el.dataset.ugrip);if(state.hot){unifiedCommit(svgPoint(e));return;}if(gr)unifiedSelectGrip(gr,e.shiftKey);E.canvas.focus();return;}
+ if(state.hot){unifiedCommit(svgPoint(e));E.canvas.focus();return;}const x=u();if(x.stage===0){const v=e.target.closest('[data-uobj]');if(v){x.objectIndex=['UA','UB','UC'].indexOf(v.dataset.uobj);unifiedPick();}else if(e.target.closest('[data-uhotspot]'))unifiedPick();else setResult('请按Tab切换对象候选，单击目标对象确认。');}else setResult(x.stage===4?'请按Shift加选带紫色提示的三个独立端点。': '先按Tab高亮目标夹点，再单击该夹点激活。');unifiedRender();E.canvas.focus();}
+function unifiedKey(e){if(!isUnified())return;const focus=e.target;const control=focus?.closest?.('input,textarea,select');if(control)return;if(e.key==='Tab'){e.preventDefault();e.stopImmediatePropagation();unifiedTab();return;}if(e.key==='Escape'){if(state.hot){e.preventDefault();e.stopImmediatePropagation();state.hot=null;state.pointer=null;state.multi=[];setResult('Esc已取消热态，三个对象未被修改。');unifiedRender();return;}return;}
+ if(e.key.toLowerCase()==='z'&&(e.ctrlKey||e.metaKey)){e.preventDefault();e.stopImmediatePropagation();undo();return;}}
+function installUnified(){// All native canvas handlers remain for other five modules. Capture-phase dispatcher only runs in this scene.
+ E.canvas.addEventListener('click',e=>{if(!isUnified())return;e.stopImmediatePropagation();unifiedCanvasClick(e)},true);
+ E.canvas.addEventListener('pointermove',e=>{
+  if(!isUnified())return;
+  if(state.hot){e.stopImmediatePropagation();state.pointer=svgPoint(e);unifiedRender();return;}
+  const x=u();if(x.stage!==2&&x.stage!==3)return;
+  const g=uStageGrips();const p=svgPoint(e);
+  const hovered=g.length===2&&Math.hypot(p.x-g[0].x,p.y-g[0].y)<=25;
+  if(hovered!==x.overlapHovered){x.overlapHovered=hovered;x.overlapIndex=0;
+   if(hovered)setResult('鼠标已悬停：检测到2个独立重合夹点，按Tab切换。当前候选：矩形A右上顶点（1/2）。');
+   else setResult(g.length===2?'鼠标已离开重合夹点：提示已收起，Tab不再切换此处候选。':'两端点已分离，不存在同位置重合候选。');
+   unifiedRender();
+  }
+ },true);
+ E.canvas.addEventListener('pointerleave',e=>{if(!isUnified()||state.hot)return;const x=u();if(x.overlapHovered){x.overlapHovered=false;x.overlapIndex=0;unifiedRender();}},true);
+ E.canvas.addEventListener('mouseover',e=>{if(isUnified())e.stopImmediatePropagation()},true);
+ E.canvas.addEventListener('mouseout',e=>{if(isUnified())e.stopImmediatePropagation()},true);
+ document.addEventListener('keydown',unifiedKey,true);
+ E.steps.addEventListener('click',e=>{if(!isUnified())return;const el=e.target.closest('[data-ustep]');if(el)unifiedStage(Number(el.dataset.ustep))});
+ E.ctrl.addEventListener('click',e=>{if(!isUnified())return;const btn=e.target.closest('[data-unified]');if(!btn)return;e.stopImmediatePropagation();const act=btn.dataset.unified;if(act==='tab')unifiedTab();else if(act==='pick')unifiedPick();else if(act==='prev')unifiedStage(u().stage-1);else if(act==='next')unifiedStage(u().stage+1);else if(act==='all')unifiedAutoAll()},true);
+ // Intercept reset buttons when this tutorial is active.
+ for(const id of ['resetScene','topReset'])q(id).addEventListener('click',e=>{if(!isUnified())return;e.stopImmediatePropagation();clearAuto();unifiedReset()},true);
+ // One scene has a semantic environment lock (the 3 geometries are planar). Other demo scenes still offer environment switching.
+ document.querySelectorAll('[data-env]').forEach(b=>b.addEventListener('click',e=>{if(!isUnified())return;e.stopImmediatePropagation();if(b.dataset.env!=='sketch')toast('本专题以草图二维图元复用同一画布；其他模块可切换项目/构件环境。',true)},true));
+ q('autoDemo').addEventListener('click',e=>{if(!isUnified())return;e.stopImmediatePropagation();unifiedAuto()},true);
+}
+// The patch is installed before initialHash() so the first unified scene also initializes correctly.
+installUnified();
+const originalSetScene = setScene;
+setScene = function(mi,si){originalSetScene(mi,si);if(isUnified())initUnified();};
+
+initialHash();
+</script>
+</body>
+</html>
