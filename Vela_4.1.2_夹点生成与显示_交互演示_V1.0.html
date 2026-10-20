@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vela · 4.1.2 夹点生成与显示 | 交互式机制演示 V1.0</title>
+<meta name="description" content="Vela夹点机制4.1.2交互式可视化演示，展示生成与显示规则、环境视图限制、共享及重合候选。">
+<style>
+:root{--chrome:#16202d;--chrome2:#202c3b;--blue:#2f75d6;--blueDeep:#1e61b4;--blueBg:#eaf2ff;--canvas:#eef1f4;--grid:#dbe1e7;--line:#dce1e7;--text:#26303c;--sub:#6c7885;--card:#fff;--green:#13a64d;--red:#e34246;--radius:7px;--softshadow:0 8px 26px rgba(23,35,55,.12)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%}body{font:13px/1.5 "Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;color:var(--text);background:var(--canvas);overflow:hidden}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.44;cursor:default}svg{display:block}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #88b6ee;outline-offset:2px}
+#app{display:grid;grid-template-rows:48px 102px minmax(0,1fr) 30px;height:100vh;min-width:1020px}
+.top{display:flex;align-items:center;background:var(--chrome);color:#fff;border-bottom:1px solid #0b1520;position:relative;z-index:30}
+.brand{width:208px;min-width:208px;height:100%;display:flex;align-items:center;gap:10px;padding:0 15px;border-right:1px solid #283443;font-size:19px;letter-spacing:.2px;font-weight:700}
+.brandIcon{width:29px;height:29px;border-radius:6px;background:#2e7bd7;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}.brandIcon svg{width:21px;height:21px}
+.topCrumb{color:#d5dce7;font-size:12px;padding:0 20px;display:flex;align-items:center;gap:8px;min-width:0;flex:1}.topCrumb b{font-weight:600;color:#fff}.crumbsep{color:#7d8c9e}
+.topRight{display:flex;align-items:center;gap:6px;padding:0 14px}.topbtn{height:29px;border:0;background:transparent;color:#cbd5e4;border-radius:5px;padding:0 10px;display:flex;align-items:center;gap:6px;font-size:12px}.topbtn:hover{background:#2c394a;color:#fff}.topbtn svg{width:15px;height:15px}.topDivider{width:1px;height:19px;background:#3b495a;margin:0 3px}.avatar{display:grid;place-items:center;border-radius:50%;background:#3a536e;color:#e8eff7;width:27px;height:27px;font-size:11px;font-weight:600;margin-left:4px}
+.ribbon{background:#fff;border-bottom:1px solid #d3d9e2;display:flex;flex-direction:column;position:relative;z-index:20;box-shadow:0 2px 4px rgba(35,52,70,.035)}.menubar{height:35px;border-bottom:1px solid #edf0f3;padding:0 12px;display:flex;align-items:stretch;gap:2px}.menuTab{min-width:55px;height:35px;padding:0 12px;border:0;background:transparent;color:#485566;font-size:12px;border-bottom:2px solid transparent}.menuTab:hover{background:#f6f9fd}.menuTab.active{color:var(--blueDeep);font-weight:700;border-bottom-color:var(--blue)}.menuFile{margin-right:4px;background:#e8f1ff;color:#1b62b6!important}
+.ribbonRow{height:66px;display:flex;align-items:stretch;padding:5px 10px;gap:12px;overflow:hidden}.toolGroup{display:flex;align-items:stretch;gap:5px;padding:0 15px 0 3px;border-right:1px solid #e5e9ef;position:relative}.toolGroup::after{content:attr(data-label);position:absolute;bottom:-3px;left:0;right:12px;text-align:center;color:#93a0ae;font-size:10px;pointer-events:none}.tool{height:48px;min-width:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1px solid transparent;border-radius:5px;background:#fff;color:#445367;padding:3px 7px;font-size:11px}.tool:hover{background:#f2f7ff;border-color:#e0eafa}.tool.active{background:#e9f2ff;border-color:#adcef8;color:#236bbf}.tool svg{height:23px;width:23px}.tool.compact{min-width:43px}.spacergrow{flex:1}.ribbonNote{display:flex;align-items:center;color:#82909f;padding:0 7px 6px;font-size:11px;white-space:nowrap}
+.workarea{min-height:0;display:grid;grid-template-columns:48px 232px minmax(0,1fr) 275px;overflow:hidden}.rail{background:var(--chrome2);display:flex;align-items:center;flex-direction:column;gap:7px;padding-top:11px;border-right:1px solid #111e2e}.rail button{width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:5px;background:transparent;color:#a8b7c7;position:relative}.rail button:hover,.rail button.active{color:#fff;background:#304358}.rail button.active::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3px;border-radius:2px;background:#73b3fa}.rail svg{width:18px;height:18px}
+.side{background:#fafbfc;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}.sideHead{height:39px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--line);background:#fff;font-weight:650;font-size:13px}.sideHead .icons{display:flex;gap:8px;color:#91a0ae;font-size:13px}.sideTools{height:39px;display:flex;align-items:center;gap:7px;padding:0 10px;border-bottom:1px solid #e5e9ee}.sideSearch{background:#fff;border:1px solid #d8e0e8;border-radius:5px;height:27px;width:100%;padding:0 9px;font-size:11px}.tree{overflow:auto;padding:11px 6px 15px 5px;flex:1;font-size:12px}.treeGroup{margin:0 0 5px}.treeTitle,.treeLeaf{height:29px;display:flex;align-items:center;gap:7px;border-radius:4px;padding:0 7px;color:#4c5968;white-space:nowrap}.treeTitle{font-weight:650}.treeTitle .chev{color:#8c99a7;font-size:12px}.treeLeaf{margin-left:19px;cursor:pointer}.treeLeaf:hover{background:#ecf2fa}.treeLeaf.active{background:#e6f0fd;color:#236fbd;font-weight:600}.treeIcon{width:15px;height:15px;display:grid;place-items:center;flex-shrink:0;color:#8a9aaa}.treeIcon svg{width:15px;height:15px}.treeMeta{margin-left:auto;font-size:10px;color:#a1acb8}.sideFoot{padding:10px 12px;color:#84909e;font-size:11px;border-top:1px solid var(--line);background:#fff}
+.middle{min-width:0;min-height:0;display:flex;flex-direction:column;position:relative}.viewTabs{height:36px;background:#fafbfc;border-bottom:1px solid #d7dee7;display:flex;align-items:stretch;padding:0 12px;gap:3px}.viewTab{height:35px;display:flex;align-items:center;gap:7px;padding:0 13px;border:1px solid transparent;border-bottom:0;border-radius:5px 5px 0 0;background:transparent;color:#687584;font-size:12px;cursor:pointer}.viewTab.active{border-color:#d3dde9;background:#fff;color:#2569b5;font-weight:600}.viewTab .x{font-size:14px;color:#a8b5c2}.viewTab:hover .x{color:#495768}
+.viewport{position:relative;flex:1;min-height:0;overflow:hidden;background-color:var(--canvas);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:25px 25px;cursor:default}.viewport.noGrid{background-image:none}.viewport::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 49% 48%,rgba(255,255,255,.33),transparent 75%)}
+.canvasHeading{position:absolute;top:15px;left:18px;z-index:4;background:rgba(255,255,255,.91);border:1px solid #dbe1e7;border-radius:5px;padding:7px 11px;box-shadow:0 3px 10px rgba(28,49,70,.055)}.canvasHeading strong{font-weight:650;display:block;font-size:12px}.canvasHeading small{color:#85919e;font-size:10px}.viewFloat{position:absolute;z-index:9;right:18px;top:16px;display:flex;align-items:center;gap:3px;background:#fff;border:1px solid #d2dae4;border-radius:7px;padding:3px;box-shadow:0 5px 15px rgba(33,52,71,.12)}.viewBtn{border:0;background:transparent;border-radius:4px;width:30px;height:29px;display:grid;place-items:center;color:#5a6878}.viewBtn:hover,.viewBtn.active{background:#e9f2ff;color:#246ac0}.viewBtn svg{width:16px;height:16px}.viewSep{height:19px;width:1px;background:#dee4ec;margin:0 2px}
+.sceneWrap{position:absolute;z-index:2;inset:0;display:grid;place-items:center;pointer-events:none}.scene{width:min(100%,1160px);height:100%;max-height:740px;min-height:320px;overflow:visible;pointer-events:auto;touch-action:none}.axis{position:absolute;bottom:18px;right:24px;z-index:4;width:57px;height:57px}.scale{position:absolute;bottom:17px;left:17px;z-index:5;background:rgba(255,255,255,.92);padding:5px 9px;border:1px solid #dde3ea;border-radius:4px;color:#596573;font-size:11px}.hint{position:absolute;z-index:8;top:19px;left:50%;transform:translateX(-50%);border-radius:5px;background:#20344c;color:#f7fbff;padding:8px 12px;box-shadow:0 6px 17px rgba(15,35,60,.16);font-size:12px;max-width:85%;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .15s}.hint.show{opacity:1}.hoverTip{position:absolute;z-index:10;pointer-events:none;padding:5px 9px;border:1px solid #c6d2df;border-radius:5px;background:#fff;box-shadow:0 4px 16px rgba(25,44,66,.12);font-size:11px;white-space:nowrap;display:none}.hoverTip.show{display:block}.canvasBottomTip{position:absolute;z-index:4;bottom:17px;left:50%;transform:translateX(-50%);padding:5px 10px;border:1px solid #dce3eb;background:rgba(255,255,255,.91);border-radius:5px;font-size:11px;color:#6c7c8b;white-space:nowrap}
+.properties{background:#fafbfc;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}.propertyHdr{height:39px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#fff;border-bottom:1px solid var(--line);font-weight:650}.propsBody{overflow:auto;padding:13px;flex:1}.selectionCard{background:#fff;border:1px solid #d9e1eb;border-radius:7px;padding:12px;margin-bottom:14px}.selType{display:flex;align-items:center;gap:10px;margin-bottom:8px}.selBadge{width:33px;height:33px;background:#e9f2ff;color:#286cba;border-radius:6px;display:grid;place-items:center}.selBadge svg{width:20px;height:20px}.selTitle{font-weight:650;font-size:13px}.selSub{font-size:11px;color:#84909e}.propertySection{margin-bottom:14px}.sectionTitle{display:flex;align-items:center;gap:7px;border-bottom:1px solid #e1e6ee;padding:0 2px 8px;font-weight:650;font-size:12px;color:#526274}.sectionTitle .arr{color:#a1aab5}.pRow{display:grid;grid-template-columns:89px 1fr;min-height:33px;align-items:center;border-bottom:1px solid #edf0f4;font-size:11px}.pRow label{color:#7b8794}.pVal{color:#2f3c49;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pInput{width:100%;height:25px;border:1px solid #d3dbe4;border-radius:4px;padding:0 7px;background:#fff;color:#2f3c49;font-size:11px}.pill{display:inline-flex;align-items:center;padding:2px 7px;border:1px solid #bfddca;background:#f0faf2;border-radius:12px;color:#31834a;font-size:10px}.noneBox{color:#8794a3;text-align:center;padding:30px 8px 20px}.noneBox svg{width:42px;height:42px;opacity:.45;margin:0 auto 13px}.noteMini{font-size:11px;color:#7d8a98;margin-top:11px;line-height:1.6}.propFoot{border-top:1px solid var(--line);background:#fff;padding:8px 13px;font-size:11px;color:#98a3af}
+.statusbar{background:#f8f9fb;border-top:1px solid #cfd8e2;display:flex;align-items:center;padding:0 11px;gap:12px;color:#687583;font-size:11px;white-space:nowrap}.statusReady{display:flex;align-items:center;gap:7px;margin-right:auto}.readyDot{width:6px;height:6px;background:#50aa7a;border-radius:50%}.statusTag{border:0;background:transparent;color:#798595;padding:3px 7px;border-radius:3px}.statusTag.active{background:#e2effd;color:#296fbd}.statusTag:hover{background:#eaf0f7}.statusSep{width:1px;height:14px;background:#d5dce5}.toast{position:absolute;right:24px;bottom:75px;z-index:25;background:#fff;border:1px solid #cad6e4;box-shadow:0 12px 29px rgba(20,40,60,.18);min-width:235px;max-width:340px;padding:12px 14px;border-radius:8px;display:none}.toast.show{display:block}.toast strong{font-size:12px;display:block;margin-bottom:2px}.toast span{color:#687787;font-size:11px}
+.drawEntity{cursor:pointer}.drawEntity .hit{stroke:transparent;stroke-width:25;fill:none}.drawEntity.selected .entityOuter{stroke:#2f75d6}.drawEntity.selected .entityInner{stroke:#e9f3ff}.drawEntity:not(.selected):hover .entityOuter{stroke:#58799c}.drawEntity .entityOuter{transition:stroke .08s}
+.grip{cursor:crosshair;pointer-events:all}.gripBody{stroke:#fff;stroke-width:1.8;fill:#003eff;vector-effect:non-scaling-stroke;transition:fill .09s}.grip:hover .gripBody,.grip.warm .gripBody{fill:#0eff0c}.grip.hot .gripBody{fill:#ff0000}.gripMoving{cursor:crosshair}.previewLine{pointer-events:none;stroke:#4a93e4;stroke-width:3;stroke-dasharray:8 5;fill:none}.selectedOverlay{pointer-events:none;stroke:#6caeff;stroke-width:2;fill:none;opacity:.6}
+.dialogOverlay{position:absolute;inset:0;z-index:25;background:rgba(16,27,39,.35);display:none;place-items:center}.dialogOverlay.show{display:grid}.modal{width:440px;background:#fff;border-radius:10px;border:1px solid #bec9d8;box-shadow:0 25px 65px rgba(18,33,50,.24);overflow:hidden}.modalHead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:#fbfcfe;padding:13px 17px;font-weight:650;font-size:15px}.modalBody{padding:15px 18px}.modalBody p{color:#69788a;font-size:12px;margin:0 0 12px;line-height:1.7}.modalRow{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:9px;margin-bottom:12px}.modalRow label{color:#697786;font-size:12px}.modalRow input,.modalRow select{height:34px;border:1px solid #cdd7e1;border-radius:5px;padding:0 10px}.modalFoot{padding:12px 18px;border-top:1px solid #e7ebf0;display:flex;justify-content:flex-end;gap:8px}.btn{border:1px solid #c9d4e1;border-radius:5px;background:#fff;padding:7px 15px;font-size:12px}.btn.primary{background:#2f75d6;border-color:#2f75d6;color:#fff}.btn:hover{filter:brightness(.97)}
+@media(max-width:1260px){.workarea{grid-template-columns:48px 205px minmax(0,1fr) 247px}.brand{width:178px;min-width:178px}.toolGroup{gap:1px;padding-right:8px}.tool{min-width:46px}.ribbonNote{display:none}.topCrumb{padding-left:12px}.properties .pRow{grid-template-columns:74px 1fr}}
+
+/* 4.1.2 guide skin: same Vela core chrome, reproducible for later sections */
+#app{grid-template-rows:48px 102px minmax(0,1fr) 30px;min-width:1130px}
+.workarea{grid-template-columns:48px 206px minmax(0,1fr) 348px}
+.scenarioBar{height:55px;flex:0 0 55px;background:#fff;border-bottom:1px solid #dce4ed;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.scenarioCaption{display:flex;align-items:center;gap:10px;min-width:0}.scenarioCaption strong{font-size:14px;letter-spacing:.1px;white-space:nowrap}.scenarioCaption small{color:#8a96a5;font-size:11px;white-space:nowrap}
+.modulePill{font-size:10px;color:#286db7;background:#eaf3ff;border:1px solid #c9def9;padding:3px 7px;border-radius:3px;white-space:nowrap}
+.scenarioPager{display:flex;align-items:center;gap:5px}.scenarioPager span{font-size:11px;color:#738398;margin-right:6px;white-space:nowrap}.scenarioPager button{width:27px;height:27px;border:1px solid #d5dde7;border-radius:5px;background:#fff;color:#42596f}.scenarioPager button:hover{background:#eef5ff;color:#256dbe}
+.demoAside{background:#fff}.hdrVersion{font-size:10px;color:#8293a4;font-weight:500}
+.scenarioNav{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:11px 11px 8px;border-bottom:1px solid #e5ebf1}
+.sceneNavBtn{min-height:37px;border:1px solid #dce5ee;background:#fbfcfe;border-radius:5px;padding:3px 2px;display:grid;place-items:center;gap:1px;color:#6a7889;font-size:10px;transition:background .14s,border-color .14s;line-height:1.3}
+.sceneNavBtn em{font-style:normal;font-size:9px;color:#9aa9b6}.sceneNavBtn:hover{background:#f2f7ff;border-color:#b9d2f5}.sceneNavBtn.active{background:#eaf3ff;color:#245fa6;border-color:#81b1ec;font-weight:700}.sceneNavBtn.active em{color:#5687bb}
+.lessonBody{min-height:0;overflow:auto;padding:18px 17px 14px}.lessonEyebrow{color:#2b72c8;font-size:11px;font-weight:650;letter-spacing:.2px;margin-bottom:6px}.lessonBody h2{font-size:17px;line-height:1.4;font-weight:700;color:#233247;margin:0 0 8px}.lessonDesc{margin:0 0 13px;color:#687889;font-size:12px;line-height:1.65}
+.ruleQuote{background:#f4f7fa;border-left:3px solid #558cd1;padding:10px 12px;border-radius:0 5px 5px 0;font-size:12px;line-height:1.7;color:#34485e;margin-bottom:19px}.ruleQuoteHead{display:block;color:#69829b;font-size:10px;font-weight:650;margin-bottom:3px}
+.lessonLabel{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#586d85;font-weight:700;margin:15px 0 9px}.lessonLabel span{color:#9aa6b5;font-size:10px;font-weight:400}
+.controlStack{display:flex;flex-direction:column;gap:9px}.controlField{display:flex;justify-content:space-between;align-items:center;gap:7px;min-height:36px}.controlField>span{font-size:12px;color:#526274;max-width:105px}.controlField select{width:182px;min-width:0;height:33px;background:#fff;border:1px solid #d2dce6;border-radius:5px;padding:0 8px;font-size:12px;color:#24394c}.controlField select:focus{outline:2px solid #a7cef5;outline-offset:1px}.controlField.toggle{min-height:32px}.controlField input{width:16px;height:16px;accent-color:#3479d3}
+.controlRow{display:flex;gap:6px;flex-wrap:wrap}.controlButton{font-size:11px;border:1px solid #cbd9e7;background:#fff;padding:6px 10px;border-radius:5px;color:#496277}.controlButton.active{background:#e6f1ff;border-color:#7aaae7;color:#1d65b7;font-weight:650}
+.actionHint{background:#fff9ed;border:1px solid #eedbb8;padding:10px 12px;border-radius:6px;font-size:12px;line-height:1.65;color:#816027}.actionHint strong{color:#795017}
+.resultCard{margin-top:15px;background:#f2f9f4;border:1px solid #d3e8d7;padding:11px 12px;border-radius:6px;min-height:74px;font-size:12px;color:#315941;line-height:1.65}.resultTop{display:flex;align-items:center;gap:7px;color:#397448;font-weight:700;font-size:11px;margin-bottom:3px}.miniLight{height:7px;width:7px;background:#56b97a;border-radius:50%;box-shadow:0 0 0 3px #ddf3e3}
+.lessonFooter{display:flex;gap:9px;flex:0 0 auto;padding:11px 14px;border-top:1px solid #e3e8ef;background:#fbfcfe}.lessonFooter button{height:36px;border-radius:5px;font-size:12px;font-weight:650}.lessonSecondary{flex:1;border:1px solid #cbd5e0;background:#fff;color:#52657a}.lessonSecondary:hover{background:#f0f4f8}.lessonPrimary{flex:1.12;border:1px solid #2f75d6;background:#2f75d6;color:#fff}.lessonPrimary:hover{background:#1f67bd}.lessonPrimary:disabled{opacity:.62}
+.viewport{background-size:24px 24px}.canvasHeading{top:13px;left:15px}.viewFloat{right:12px;top:13px}.canvasBottomTip{bottom:20px;max-width:90%;text-align:center;white-space:normal}
+.scene .drawEntity{cursor:pointer}.scene .drawEntity .selectedLine{stroke:#347be0}.scene .gripPoint{cursor:crosshair}.scene .gripPoint .gripVis{fill:#1768d9;stroke:#fff;stroke-width:1.5;transition:fill .12s}.scene .gripPoint.warm .gripVis{fill:#17a84b;stroke:#fff}.scene .gripPoint.hot .gripVis{fill:#eb444b}.scene .gripPoint.disabled{cursor:not-allowed}.scene .gripPoint.disabled .gripVis{fill:#b9c2cb;stroke:#fff}.scene .gripPoint.disabled .gripStrike{stroke:#556679;stroke-width:1.4;pointer-events:none}.scene .gripHit{fill:transparent;stroke:none;pointer-events:all}.scene .gripPulse{fill:none;stroke:#3c8bdc;stroke-width:1.8;opacity:0;pointer-events:none}.scene .gripPoint.demo .gripPulse{animation:gripPulse 1.3s ease-out infinite}
+@keyframes gripPulse{0%{r:10;opacity:.9}100%{r:25;opacity:0}}
+.scene .selectedHalo{stroke:#3b83df;stroke-width:20;opacity:.075;pointer-events:none}.scene .previewLine{stroke:#3e88e7;stroke-width:4.5;stroke-dasharray:9 6;opacity:.8;pointer-events:none}.scene .sketchMark{stroke:#c58f43;stroke-width:1.6;stroke-dasharray:6 5;opacity:.85}
+.canvasInfo{position:absolute;left:16px;bottom:54px;z-index:8;display:flex;gap:6px;max-width:calc(100% - 40px);pointer-events:none}.canvasInfo span{font-size:10px;line-height:1.45;background:rgba(255,255,255,.92);border:1px solid #d8e2ee;padding:5px 8px;border-radius:5px;color:#657486;box-shadow:0 1px 4px rgba(35,50,66,.05)}.canvasInfo span.active{background:#eaf3ff;color:#2863a1;border-color:#98c2f2}
+.canvasNotice{position:absolute;top:77px;left:50%;transform:translateX(-50%);z-index:6;background:#fff;border:1px solid #aaccf3;color:#2f69ad;padding:9px 13px;border-radius:5px;font-size:12px;max-width:78%;text-align:center;box-shadow:0 7px 22px rgba(37,85,148,.12);pointer-events:none;animation:noticeSlide .25s ease both}.canvasNotice[hidden]{display:none}@keyframes noticeSlide{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+.animatedBeacon{position:absolute;left:18px;top:90px;font-size:10px;color:#4f7096;border:1px solid #d2e0f0;background:#f8fbff;border-radius:4px;padding:5px 8px;z-index:7;pointer-events:none}
+@media(max-width:1380px){.workarea{grid-template-columns:48px 190px minmax(0,1fr) 326px}.scenarioCaption small{display:none}.lessonBody{padding:13px}.scenarioNav{gap:3px;padding:8px}.sceneNavBtn{font-size:9px}}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><span class="brandIcon"><svg viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4 6 13 21 22 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 6h18" stroke="white" stroke-width="2.3" stroke-linecap="round"/></svg></span><span>Vela</span></div>
+    <div class="topCrumb"><b>办公楼改造项目</b><span class="crumbsep">/</span><span id="topViewName">首层平面</span><span style="opacity:.35;margin:0 4px">│</span><span style="font-size:11px;color:#9eabbc">本地示例项目 · 未连接项目服务</span></div>
+    <div class="topRight">
+      <button class="topbtn" id="topSave" title="保存（演示）" data-ico="save">保存</button>
+      <button class="topbtn" id="topUndo" title="撤销（Ctrl+Z）" data-ico="undo">撤销</button>
+      <button class="topbtn" id="topRedo" title="重做（Ctrl+Y）" data-ico="redo">重做</button>
+      <span class="topDivider"></span><button class="topbtn" id="shareBtn" data-ico="users">协作</button>
+      <span class="avatar" title="当前用户：设计人员">设</span>
+    </div>
+  </header>
+  <section class="ribbon" aria-label="主功能区">
+    <div class="menubar" id="menuTabs">
+      <button class="menuTab menuFile" data-menu="文件">文件</button>
+      <button class="menuTab active" data-menu="建筑">建筑</button>
+      <button class="menuTab" data-menu="结构">结构</button>
+      <button class="menuTab" data-menu="给排水">给排水</button>
+      <button class="menuTab" data-menu="暖通">暖通</button>
+      <button class="menuTab" data-menu="电气">电气</button>
+      <button class="menuTab" data-menu="注释">注释</button>
+      <button class="menuTab" data-menu="视图">视图</button>
+      <button class="menuTab" data-menu="管理">管理</button>
+    </div>
+    <div class="ribbonRow" id="ribbonRow">
+      <div class="toolGroup" data-label="修改"><button class="tool active" id="selectTool" data-tool="select" data-ico="pointer">选择</button><button class="tool" id="moveTool" data-tool="move" data-ico="move">移动</button><button class="tool" id="deleteTool" data-tool="delete" data-ico="trash">删除</button></div>
+      <div class="toolGroup" data-label="绘制"><button class="tool" id="wallTool" data-tool="wall" data-ico="wall">墙</button><button class="tool" id="lineTool" data-tool="line" data-ico="line">直线</button><button class="tool" id="gridTool" data-tool="grid" data-ico="grid">轴网</button></div>
+      <div class="toolGroup" data-label="视图"><button class="tool" id="viewPlanTool" data-tool="plan" data-ico="plan">平面视图</button><button class="tool" id="view3dTool" data-tool="3d" data-ico="cube">三维视图</button></div>
+      <div class="toolGroup" data-label="界面"><button class="tool compact" id="toggleGridRibbon" data-ico="dots">网格</button><button class="tool compact" id="fitTool" data-ico="fit">适应</button><button class="tool compact" id="helpTool" data-ico="help">操作</button></div>
+      <div class="spacergrow"></div><div class="ribbonNote" style="color:#3775bd;font-weight:650">机制说明 · 4.1.2 夹点生成与显示</div>
+    </div>
+  </section>
+  <div class="workarea">
+    <nav class="rail" aria-label="工作区导航">
+      <button class="active" title="项目浏览器" data-panel="project" data-ico="layers"></button>
+      <button title="对象属性" data-panel="props" data-ico="sliders"></button>
+      <button title="二维绘制" data-panel="drawing" data-ico="pencil"></button>
+      <button title="视图管理" data-panel="views" data-ico="eye"></button>
+    </nav>
+    <aside class="side">
+      <div class="sideHead"><span id="sideTitle">项目浏览器</span><span class="icons">⌕　⋯</span></div>
+      <div class="sideTools"><input id="treeSearch" class="sideSearch" placeholder="筛选视图 / 构件" aria-label="筛选项目浏览器"></div>
+      <div class="tree" id="projectTree">
+        <div class="treeGroup" data-name="项目">
+          <div class="treeTitle"><span class="chev">▾</span><span class="treeIcon" data-ico="folder"></span>办公楼改造项目</div>
+          <div class="treeGroup"><div class="treeTitle" style="padding-left:18px"><span class="chev">▾</span><span class="treeIcon" data-ico="plan"></span>平面视图</div>
+            <div class="treeLeaf active" data-view="floor1"><span class="treeIcon" data-ico="file"></span>首层平面<span class="treeMeta">1:100</span></div>
+            <div class="treeLeaf" data-view="floor2"><span class="treeIcon" data-ico="file"></span>二层平面<span class="treeMeta">1:100</span></div>
+          </div>
+          <div class="treeGroup"><div class="treeTitle" style="padding-left:18px"><span class="chev">▾</span><span class="treeIcon" data-ico="cube"></span>三维视图</div>
+            <div class="treeLeaf" data-view="3d"><span class="treeIcon" data-ico="cube"></span>默认三维视图<span class="treeMeta">3D</span></div>
+          </div>
+          <div class="treeGroup"><div class="treeTitle" style="padding-left:18px"><span class="chev">▾</span><span class="treeIcon" data-ico="layers"></span>模型构件</div>
+            <div class="treeLeaf" data-category="walls"><span class="treeIcon" data-ico="wall"></span>墙体<span class="treeMeta" id="wallCount">6</span></div>
+            <div class="treeLeaf" data-category="lines"><span class="treeIcon" data-ico="line"></span>二维基础图元<span class="treeMeta" id="lineCount">2</span></div>
+            <div class="treeLeaf" data-category="grids"><span class="treeIcon" data-ico="grid"></span>轴网<span class="treeMeta">4</span></div>
+          </div>
+          <div class="treeGroup"><div class="treeTitle" style="padding-left:18px"><span class="chev">▸</span><span class="treeIcon" data-ico="file"></span>图纸与交付</div></div>
+          <div class="treeGroup"><div class="treeTitle" style="padding-left:18px"><span class="chev">▸</span><span class="treeIcon" data-ico="folder"></span>链接模型</div></div>
+        </div>
+      </div>
+      <div class="sideFoot">Vela 项目示例　·　共 3 个视图</div>
+    </aside>
+    <section class="middle" aria-label="模型绘图工作区">
+      <div class="scenarioBar"><div class="scenarioCaption"><span class="modulePill">机制交互示例</span><strong>4.1.2　夹点生成与显示</strong><small>点击场景，操作画布观察规则</small></div><div class="scenarioPager"><span id="scenarioPage">01 / 08</span><button id="prevScene" title="上一个场景">←</button><button id="nextScene" title="下一个场景">→</button></div></div>
+      <div class="viewTabs" id="viewTabs"><div class="viewTab active" data-view="floor1"><span data-ico="plan"></span>首层平面</div><div class="viewTab" data-view="floor2"><span data-ico="plan"></span>二层平面</div><div class="viewTab" data-view="3d"><span data-ico="cube"></span>默认三维<span style="color:#a6b4c1">◦</span></div></div>
+      <div class="viewport" id="viewport" aria-label="可交互的Vela绘图画布">
+        <div class="canvasHeading"><strong id="canvasTitle">首层平面</strong><small id="canvasSub">楼层 F1　/　建筑　/　比例 1:100</small></div>
+        <div class="viewFloat" aria-label="视图操作"><button class="viewBtn active" id="chooseSelect" title="选择" data-ico="pointer"></button><span class="viewSep"></span><button class="viewBtn" id="zoomIn" title="放大" data-ico="plus"></button><button class="viewBtn" id="zoomOut" title="缩小" data-ico="minus"></button><button class="viewBtn" id="zoomFit" title="适应窗口" data-ico="fit"></button><span class="viewSep"></span><button class="viewBtn active" id="gridVisual" title="显示网格" data-ico="dots"></button></div>
+        <div class="sceneWrap"><svg class="scene" id="scene" viewBox="0 0 1060 700" role="img" aria-label="示例建筑首层平面，可单击图元并通过夹点编辑"></svg></div>
+        <div class="hint" id="operationHint" aria-live="polite"></div><div class="canvasNotice" id="canvasNotice" hidden></div><div class="canvasInfo" id="canvasInfo"></div>
+        <div class="hoverTip" id="hoverTip"></div>
+        <div class="scale">1:100　|　单位：mm</div>
+        <div class="canvasBottomTip" id="canvasBottomTip">单击对象查看夹点 · 单击夹点进入热态 · Esc 取消</div>
+        <svg class="axis" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="23" stroke="#cad4df" fill="rgba(255,255,255,.88)"/><path d="M30 30V9" stroke="#d65656" stroke-width="2.3"/><path d="M30 30 49 43" stroke="#4b9b65" stroke-width="2.3"/><path d="M30 30 15 48" stroke="#4079cc" stroke-width="2.3"/><text x="26" y="8" font-size="9" fill="#bf4343">Y</text><text x="48" y="48" font-size="9" fill="#31864c">X</text></svg>
+        <div class="toast" id="toast" role="status"><strong id="toastTitle"></strong><span id="toastDetail"></span></div>
+        <div class="dialogOverlay" id="dialogOverlay"><div class="modal" role="dialog" aria-modal="true" aria-label="项目操作"><div class="modalHead"><span id="modalTitle">项目操作</span><button class="btn" id="closeModal">×</button></div><div class="modalBody" id="modalContent"></div><div class="modalFoot"><button class="btn" id="cancelModal">取消</button><button class="btn primary" id="confirmModal">确定</button></div></div></div>
+      </div>
+    </section>
+    <aside class="properties demoAside" aria-label="夹点生成与显示规则交互导览">
+      <div class="propertyHdr"><span>规则交互导览</span><span class="hdrVersion">4.1.2 / V1.2</span></div>
+      <div class="scenarioNav" id="scenarioNav" role="tablist" aria-label="机制示例"></div>
+      <div class="lessonBody" id="lessonBody">
+        <div class="lessonEyebrow" id="lessonIndex">01 / 08 · 基础生成</div>
+        <h2 id="lessonTitle">对象具备能力才生成夹点</h2>
+        <p id="lessonDesc" class="lessonDesc"></p>
+        <div class="ruleQuote"><span class="ruleQuoteHead">对应正文 · 4.1.2</span><div id="ruleText"></div></div>
+        <div class="lessonLabel">条件控制 <span>点击修改当前场景</span></div>
+        <div id="lessonControls" class="controlStack"></div>
+        <div class="lessonLabel">操作提示</div>
+        <div class="actionHint" id="actionHint"></div>
+        <div class="resultCard" aria-live="polite"><div class="resultTop"><span class="miniLight"></span> 当前观察结果</div><div id="resultText"></div></div>
+      </div>
+      <div class="lessonFooter"><button id="demoReset" class="lessonSecondary">↺ 重置场景</button><button id="demoPlay" class="lessonPrimary">▶ 演示此规则</button></div>
+    </aside>
+  </div>
+  <footer class="statusbar"><div class="statusReady"><span class="readyDot"></span><span id="statusText">就绪</span></div><span id="cursorCoords">X: 0　Y: 0</span><span class="statusSep"></span><button class="statusTag active" id="statusSnap">对象捕捉 ON</button><button class="statusTag active" id="statusGrid">显示网格</button><span class="statusSep"></span><span id="statusView">首层平面</span></footer>
+</div>
+
+<script>
+(()=>{'use strict';
+const ICONS={pointer:'<path d="M5 3l12 12-6 .2-2.8 5.4L5 3Z"/>',move:'<path d="M12 2v20M2 12h20m-13-7 3-3 3 3m-6 14 3 3 3-3M5 9l-3 3 3 3m14-6 3 3-3 3"/>',trash:'<path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7M10 10v7m4-7v7"/>',wall:'<path d="M3 6h18v12H3zM3 12h18M9 6v6m6 0v6"/>',line:'<path d="M4 19 20 5"/><circle cx="4" cy="19" r="2"/><circle cx="20" cy="5" r="2"/>',grid:'<path d="M3 5h18M3 12h18M3 19h18M7 2v20M17 2v20"/>',plan:'<path d="M4 4h16v16H4zM4 11h7V4m0 7h9M11 11v9"/>',cube:'<path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10"/>',dots:'<path d="M4 4h2v2H4zM11 4h2v2h-2zM18 4h2v2h-2zM4 11h2v2H4zM11 11h2v2h-2zM18 11h2v2h-2zM4 18h2v2H4zM11 18h2v2h-2zM18 18h2v2h-2z"/>',fit:'<path d="M4 9V4h5m6 0h5v5m0 6v5h-5M9 20H4v-5"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.4 1.6c-1.2 1.1-2.2 1.5-2.2 3.4m0 2.8v.4"/>',save:'<path d="M4 3h14l3 3v15H3V3h1Zm3 0v7h10V3M7 21v-8h10v8"/>',undo:'<path d="M8 7 3 12l5 5M3 12h12a5 5 0 0 1 0 10"/>',redo:'<path d="m16 7 5 5-5 5m5-5H9a5 5 0 0 0 0 10"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 5 5"/>',layers:'<path d="m12 2 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5M3 17l9 5 9-5"/>',sliders:'<path d="M4 7h16M4 17h16M9 3v8m6 2v8"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',pencil:'<path d="m4 17-.8 4L7 20 20 7l-3-3L4 17ZM14 7l3 3"/>',eye:'<path d="M2 12S6 5 12 5s10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',folder:'<path d="M3 6h7l2 3h9v11H3V6Z"/>',file:'<path d="M6 3h9l4 4v14H6V3Zm9 0v5h4"/>',plus:'<path d="M12 4v16M4 12h16"/>',minus:'<path d="M4 12h16"/>'};
+function ico(name){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||ICONS.file}</svg>`}
+document.querySelectorAll('[data-ico]').forEach(e=>{if(e.tagName==='BUTTON')e.insertAdjacentHTML('afterbegin',ico(e.dataset.ico));else e.innerHTML=ico(e.dataset.ico)});
+const $=id=>document.getElementById(id), ns='http://www.w3.org/2000/svg', scene=$('scene'), vp=$('viewport');
+const LESSONS=[
+ {short:'生成条件',title:'对象具备编辑能力，才生成夹点',desc:'先确定对象、环境、视图与选择层级，再决定夹点是否进入显示集合。禁用与结果合法性不在这一阶段混为一谈。',rule:'4.1.2（1）生成条件：对象具备可编辑能力，且当前环境、视图和选择层级允许使用时，生成相应夹点。',action:'先点击画布中的蓝灰色墙体或直线。再切换“对象选择”和“编辑能力”，对比夹点有无。',controls:[{type:'select',key:'subject',label:'演示对象',opts:[['wall','基本墙 W-017'],['line','二维直线 L-001'],['symbol','无夹点能力的符号']]},{type:'toggle',key:'selected',label:'对象已选中'},{type:'toggle',key:'capability',label:'开放夹点能力'}]},
+ {short:'位置对应',title:'夹点位置应当对应实际编辑目标',desc:'端点控制几何端部，中点提供对象允许的移动入口；参数操纵柄显示在有效的尺寸控制方向上。',rule:'4.1.2（2）显示位置：几何夹点对应实际几何控制位置；参数及状态夹点位于可识别的操作位置，方向与行为一致。',action:'选择“直线”或“参数化构件”，将鼠标移至不同夹点，观察端点／中点／方向操纵柄及行为提示。',controls:[{type:'select',key:'subject',label:'演示对象',opts:[['line','二维直线'],['wall','基本墙'],['family','参数化构件']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'编辑环境',title:'同一对象在不同编辑环境中开放不同夹点',desc:'项目环境只提供当前实例开放的编辑入口；草图环境直接编辑轮廓；构件编辑环境可开放定义级的几何与参照控制。',rule:'4.1.2（1）（4）：夹点的生成依据当前编辑环境。环境切换后重新计算夹点集合，未确认操作先取消。',action:'在“项目 / 草图 / 构件编辑”之间切换，观察同一构件的夹点数量、位置与参照线变化。',controls:[{type:'select',key:'env',label:'编辑环境',opts:[['project','项目环境'],['sketch','草图编辑'],['family','构件编辑']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'视图方向',title:'当前视图必须提供有效操作位置和方向',desc:'视图会影响哪些夹点能被显示、能沿什么方向编辑。平面、立面与三维视图展示的是不同的有效操作入口。',rule:'4.1.2（1）（4）：当前视图必须显示并允许选择对象，并能确定对应操作位置与方向；切换视图须更新夹点集合。',action:'切换平面、立面、三维视图。观察平面端点、立面高度控制和三维方向操纵柄。',controls:[{type:'select',key:'view',label:'当前视图',opts:[['plan','楼层平面'],['elevation','立面视图'],['3d','三维视图']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'选择层级',title:'对象级与子对象级的夹点不同',desc:'当前选择的是构件实例还是其内部几何，将直接影响夹点集合。子对象编辑不是自动向项目实例开放全部构件定义能力。',rule:'4.1.2（1）：夹点应符合当前选择层级，只有该层级允许操作的对象或子对象才能生成相应夹点。',action:'在“对象实例”和“几何子对象”之间切换，观察尺寸操纵柄与轮廓顶点的区别。',controls:[{type:'select',key:'level',label:'选择层级',opts:[['object','构件实例'],['sub','几何子对象']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'显示限制',title:'不显示、不可激活与目标无效分别处理',desc:'对象没有能力或当前环境不开放时不生成夹点；固定和只读不改变原有能力，但使相关夹点禁用；有尺寸约束仍可显示夹点。',rule:'4.1.2（3）：不支持／环境不开放则不显示；固定／只读使用禁用反馈；存在参数约束的夹点正常显示，具体目标合法性在操作时校验。',action:'依次切换正常、固定、只读和尺寸约束。固定时可单击图钉解除固定；尺寸约束下尝试把端点移至过远处再确认。',controls:[{type:'select',key:'restriction',label:'对象状态',opts:[['normal','正常可编辑'],['pinned','对象已固定'],['readonly','只读 / 无权限'],['dimension','存在尺寸约束']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'重合与共享',title:'相同坐标不等于同一个夹点',desc:'独立直线端点即使重合，也各有编辑目标；只有当前选择集合与已定义的共同编辑关系均满足时才生成共享夹点。',rule:'4.1.2（5）、4.1.6：当前选择集合内处理重合候选；共享夹点依据有效共同编辑关系生成，独立重合夹点保留各自目标。',action:'将“连接关系”切为“独立重合”，按 Tab 切换候选；再切为“明确连接”，观察共享夹点（联合编辑入口）及提示。',controls:[{type:'select',key:'relation',label:'端点关系',opts:[['independent','仅坐标重合'],['shared','已有共同编辑关系']]},{type:'select',key:'selectionSet',label:'当前选择',opts:[['both','两条线均选中'],['one','仅选中 L-001']]},{type:'toggle',key:'selected',label:'对象已选中'}]},
+ {short:'上下文刷新',title:'选择、视图及环境改变后，重新确定夹点',desc:'当前上下文变化时应重新评估显示集合。若夹点已进入热态、尚未确认修改，则先取消，避免将旧操作带入新环境。',rule:'4.1.2（4）：视图、环境或选择范围变化后更新夹点集合。未确认热夹点修改在上下文切换前取消并恢复操作前状态。',action:'单击墙体端点进入热态并移动鼠标形成预览，然后切换到立面视图，观察预览取消与夹点集合更新。',controls:[{type:'select',key:'view',label:'当前视图',opts:[['plan','楼层平面'],['elevation','立面视图'],['3d','三维视图']]},{type:'select',key:'env',label:'编辑环境',opts:[['project','项目环境'],['sketch','草图编辑'],['family','构件编辑']]},{type:'toggle',key:'selected',label:'对象已选中'}]}
+];
+const state={scenario:0,env:'project',view:'plan',level:'object',subject:'wall',selected:true,capability:true,restriction:'normal',relation:'independent',selectionSet:'both',candidate:0,hot:null,hover:null,selectedIds:['wall'],coord:{x:0,y:0},demo:false,animFlag:false,seq:0,grid:true,snap:true,history:[],future:[],objects:{wall:{id:'wall',label:'基本墙 W-017',type:'wall',x1:260,y1:370,x2:760,y2:370},line:{id:'line',label:'直线 L-001',type:'line',x1:260,y1:450,x2:760,y2:450},family:{id:'family',label:'参数化构件 F-031',type:'family'},symbol:{id:'symbol',label:'二维注释符号 A-009',type:'symbol'},l1:{id:'l1',label:'直线 L-001',type:'line',x1:290,y1:370,x2:530,y2:370},l2:{id:'l2',label:'直线 L-002',type:'line',x1:530,y1:370,x2:780,y2:475}}};
+const svg=(tag, attrs={}, parent=scene)=>{const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>{if(v!==undefined&&v!==null)e.setAttribute(k,String(v))});parent.appendChild(e);return e};
+function txt(t,x,y,opt={}){const a=svg('text',{x,y,'font-size':12,'font-family':'Segoe UI,Microsoft YaHei,sans-serif',fill:'#73849a','text-anchor':'middle',...opt});a.textContent=t;return a}
+function pos(evt){const p=scene.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;const m=scene.getScreenCTM();return m?p.matrixTransform(m.inverse()):{x:0,y:0}}
+function constrain(p){return {x:Math.round(Math.max(150,Math.min(920,p.x))/10)*10,y:Math.round(Math.max(120,Math.min(590,p.y))/10)*10}}
+const deep=x=>JSON.parse(JSON.stringify(x));
+function notify(text){const e=$('canvasNotice');e.hidden=false;e.textContent=text;clearTimeout(notify.timer);notify.timer=setTimeout(()=>e.hidden=true,2900)}
+function result(str){$('resultText').textContent=str}
+function status(str){$('statusText').textContent=str}
+function viewName(){return state.view==='plan'?'首层平面':state.view==='elevation'?'东立面':'默认三维'}
+function resetFor(i){state.seq++;$('demoPlay').disabled=false;state.scenario=i;state.env='project';state.view='plan';state.level='object';state.subject='wall';state.selected=true;state.capability=true;state.restriction='normal';state.relation='independent';state.selectionSet='both';state.candidate=0;state.hover=null;state.hot=null;state.demo=false;state.animFlag=false;state.objects.wall={id:'wall',label:'基本墙 W-017',type:'wall',x1:260,y1:370,x2:760,y2:370};state.objects.line={id:'line',label:'直线 L-001',type:'line',x1:260,y1:450,x2:760,y2:450};state.objects.l1={id:'l1',label:'直线 L-001',type:'line',x1:290,y1:370,x2:530,y2:370};state.objects.l2={id:'l2',label:'直线 L-002',type:'line',x1:530,y1:370,x2:780,y2:475};
+ if(i===0){state.selected=false;state.subject='wall'}
+ if(i===1){state.subject='line'}
+ if(i===2){state.subject='family'}
+ if(i===3){state.subject='wall'}
+ if(i===4){state.subject='family'}
+ if(i===5){state.subject='wall'}
+ if(i===6){state.subject='line';state.selectionSet='both'}
+ if(i===7){state.subject='wall'}
+ renderLesson();renderAll();notify(i===0?'先单击绘图区域的对象，再观察夹点生成':`场景 ${String(i+1).padStart(2,'0')}：${LESSONS[i].short}`)
+}
+function setControl(key,v){state.seq++;$('demoPlay').disabled=false;state.animFlag=false;if(state.hot){state.hot=null;notify('上下文已改变：取消尚未确认的夹点编辑')}
+ state.hover=null;state.candidate=0;if(key==='selected')v=Boolean(v);
+ if(key==='capability')v=Boolean(v);state[key]=v;
+ if(key==='view'&&v!=='plan'&&state.env==='sketch'){state.env='project';notify('草图编辑已退出：切换视图前重新确定环境')}
+ renderLesson();renderAll();status(`条件已更新 · ${LESSONS[state.scenario].short}`)
+}
+function controlHtml(c){if(c.type==='toggle')return `<label class="controlField toggle"><span>${c.label}</span><input type="checkbox" data-ctrl="${c.key}" ${state[c.key]?'checked':''}></label>`;
+ return `<label class="controlField"><span>${c.label}</span><select data-ctrl="${c.key}">${c.opts.map(([v,label])=>`<option value="${v}" ${state[c.key]===v?'selected':''}>${label}</option>`).join('')}</select></label>`}
+function renderLesson(){const L=LESSONS[state.scenario];$('lessonIndex').textContent=`${String(state.scenario+1).padStart(2,'0')} / 08 · ${L.short}`;$('lessonTitle').textContent=L.title;$('lessonDesc').textContent=L.desc;$('ruleText').textContent=L.rule;$('actionHint').innerHTML=`<strong>试一试：</strong>${L.action}`;$('lessonControls').innerHTML=L.controls.map(controlHtml).join('');$('scenarioPage').textContent=`${String(state.scenario+1).padStart(2,'0')} / 08`;
+ $('scenarioNav').innerHTML=LESSONS.map((l,i)=>`<button type="button" class="sceneNavBtn ${i===state.scenario?'active':''}" role="tab" aria-selected="${i===state.scenario}" data-scenario="${i}"><em>${String(i+1).padStart(2,'0')}</em>${l.short}</button>`).join('');$('canvasTitle').textContent=viewName();$('topViewName').textContent=viewName();$('statusView').textContent=viewName();$('canvasSub').textContent=`${state.env==='sketch'?'草图编辑':state.env==='family'?'构件编辑':'项目环境'}　/　${state.view==='3d'?'三维视图':state.view==='elevation'?'立面视图':'比例 1:100'}`;document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===(state.view==='plan'?'floor1':state.view==='3d'?'3d':'floor2')))
+}
+function drawBackground(){const g=svg('g',{'pointer-events':'none'});
+ for(let i=0;i<4;i++){const x=240+i*210;svg('line',{x1:x,y1:156,x2:x,y2:576,stroke:'#b7cadb','stroke-width':1,'stroke-dasharray':'7 8'},g);svg('circle',{cx:x,cy:162,r:16,fill:'#fafdff',stroke:'#86a5c4','stroke-width':1.1},g);txt(String(i+1),x,166,{'font-size':12,fill:'#6884a0'})}
+ for(let i=0;i<3;i++){let y=260+i*160;svg('line',{x1:175,y1:y,x2:960,y2:y,stroke:'#bdcedc','stroke-width':1,'stroke-dasharray':'7 8'},g);svg('circle',{cx:193,cy:y,r:16,fill:'#fafdff',stroke:'#86a5c4','stroke-width':1.1},g);txt(['A','B','C'][i],193,y+4,{'font-size':12,fill:'#6884a0'})}
+ const segs=[[240,260,870,260],[240,540,870,540],[240,260,240,540],[870,260,870,540],[455,260,455,365],[700,370,700,540]];
+ segs.forEach(([x1,y1,x2,y2])=>{svg('line',{x1,y1,x2,y2,stroke:'#8b97a3','stroke-width':11},g);svg('line',{x1,y1,x2,y2,stroke:'#f4f6f8','stroke-width':7},g)});
+ svg('rect',{x:470,y:300,width:90,height:52,fill:'#e1e8ee',stroke:'#c3cbd5'},g);txt('楼梯间',515,330,{'font-size':11});svg('rect',{x:745,y:423,width:86,height:62,fill:'none',stroke:'#c3cbd5'},g);txt('办公区',786,458,{'font-size':11});
+ svg('line',{x1:240,y1:590,x2:870,y2:590,stroke:'#b9c8d5','stroke-width':1.5},g);[240,455,700,870].forEach(x=>svg('line',{x1:x,y1:580,x2:x,y2:598,stroke:'#b9c8d5','stroke-width':1},g));txt('24 000',555,607,{'font-size':10})
+}
+function drawSketchBackground(){const g=svg('g',{'pointer-events':'none'});svg('rect',{x:260,y:215,width:600,height:335,fill:'rgba(245,249,254,.45)',stroke:'#acbed2','stroke-width':1,'stroke-dasharray':'6 5'},g);txt('草图平面 · 轮廓编辑',558,245,{'font-size':13,fill:'#8aa0b6'});svg('path',{d:'M 320 490 V 300 H 785 V 490 Z',fill:'none',stroke:'#7e91a7','stroke-width':2},g)}
+function drawElevationBackground(){const g=svg('g',{'pointer-events':'none'});svg('line',{x1:170,y1:540,x2:940,y2:540,stroke:'#98b1c8','stroke-width':1.6},g);svg('rect',{x:310,y:297,width:485,height:243,fill:'#e6ebf0',stroke:'#798d9f','stroke-width':2},g);for(let i=1;i<5;i++)svg('line',{x1:310+i*97,y1:297,x2:310+i*97,y2:540,stroke:'#b4c2cf','stroke-width':1},g);svg('rect',{x:500,y:408,width:94,height:132,fill:'#d7e4f0',stroke:'#879cb2','stroke-width':1.8},g);svg('path',{d:'M260 297 H 840 M260 540 H 840',fill:'none',stroke:'#aec0d1','stroke-dasharray':'7 5'},g);txt('标高 +3.000',215,293,{'font-size':11});txt('标高 ±0.000',215,536,{'font-size':11})}
+function draw3dBackground(){const g=svg('g',{'pointer-events':'none'});const poly=(p,fill)=>svg('polygon',{points:p,fill,stroke:'#8fa7be','stroke-width':1.5},g);poly('275,370 590,250 850,355 535,475','#ecf3fb');poly('275,370 535,475 535,555 275,450','#d1dfec');poly('535,475 850,355 850,430 535,555','#c4d8ea');poly('360,340 585,250 585,425 360,516','#ecf3fb');poly('585,250 675,285 675,455 585,425','#bfd3e6');poly('455,305 485,293 485,453 455,465','#e5edf5');txt('三维对象 · 示意操作空间',568,627,{'font-size':12})}
+function drawFamilyBackground(){const g=svg('g',{'pointer-events':'none'});svg('line',{x1:575,y1:173,x2:575,y2:583,stroke:'#c38b40','stroke-width':1.5,'stroke-dasharray':'7 6'},g);svg('line',{x1:300,y1:380,x2:875,y2:380,stroke:'#c38b40','stroke-width':1.5,'stroke-dasharray':'7 6'},g);txt('参照平面',565,166,{'font-size':11,fill:'#b38241'});svg('rect',{x:420,y:278,width:309,height:202,fill:'#dee9f5',stroke:'#7394ba','stroke-width':2},g);svg('rect',{x:430,y:288,width:290,height:182,fill:'rgba(255,255,255,.24)',stroke:'#b4cae3','stroke-width':1},g);svg('line',{x1:420,y1:512,x2:729,y2:512,stroke:'#7e9cbc','stroke-width':1.3},g);[420,729].forEach(x=>svg('line',{x1:x,y1:498,x2:x,y2:527,stroke:'#7e9cbc','stroke-width':1.3},g));txt('实例宽度 3000 mm',575,532,{'font-size':12,fill:'#6585a8'});
+}
+function drawSimple(o){const g=svg('g',{'data-object':o.id,class:'drawEntity'});
+ const selected=state.selected&&(state.scenario!==6||state.selectionSet==='both'||o.id==='l1');
+ if(o.id==='symbol'){svg('path',{d:'M 450 410 L 490 330 L 530 410 Z M 450 410 H 530',fill:'none',stroke:selected?'#327bd6':'#8698a8','stroke-width':3},g);txt('无夹点能力示例 A-009',540,449,{'font-size':12});svg('rect',{x:410,y:292,width:190,height:167,fill:'transparent','data-object':'symbol'},g);return}
+ const coords=state.hot&&state.hot.objectId===o.id&&state.hot.preview?state.hot.preview:o;
+ if(o.type==='wall'){
+  if(selected)svg('line',{x1:coords.x1,y1:coords.y1,x2:coords.x2,y2:coords.y2,class:'selectedHalo'},g);
+  svg('line',{x1:coords.x1,y1:coords.y1,x2:coords.x2,y2:coords.y2,stroke:selected?'#3479d3':'#738392','stroke-width':13},g);svg('line',{x1:coords.x1,y1:coords.y1,x2:coords.x2,y2:coords.y2,stroke:'#f8fbff','stroke-width':7,'pointer-events':'none'},g)
+ }else svg('line',{x1:coords.x1,y1:coords.y1,x2:coords.x2,y2:coords.y2,stroke:selected?'#3479d3':'#64788a','stroke-width':3.2,'stroke-linecap':'round'},g);
+ svg('line',{x1:coords.x1,y1:coords.y1,x2:coords.x2,y2:coords.y2,stroke:'transparent','stroke-width':24,'pointer-events':'stroke','data-object':o.id},g);
+ return g
+}
+function selectedBody(){if(state.scenario===6)return state.selectionSet==='both'?['l1','l2']:['l1'];return state.selected?[state.subject]:[]}
+function computeGrips(){let grips=[];if(!state.selected||!state.capability)return grips;
+ const add=(id,oid,x,y,label,behavior,shape='square',extras={})=>{grips.push({id,oid,x,y,label,behavior,shape,disabled:state.restriction==='pinned'||state.restriction==='readonly',...extras})};
+ if(state.scenario===6){const a=state.objects.l1,b=state.objects.l2;const coincident=Math.hypot(a.x2-b.x1,a.y2-b.y1)<2;const shared=state.relation==='shared'&&state.selectionSet==='both'&&coincident;if(shared)add('shared','shared',a.x2,a.y2,'共享端点 · 2个对象','联合调整','diamond',{members:['l1','l2']});
+ add('l1end','l1',a.x2,a.y2,'直线 L-001 · 终点','拉伸');if(state.selectionSet==='both')add('l2start','l2',b.x1,b.y1,'直线 L-002 · 起点','拉伸');return grips;}
+ if(state.subject==='symbol')return grips;
+ if(state.view==='elevation'){
+  add('elevheight',state.subject,553,297,'墙体 · 高度控制','调整高度','triangle');add('elevbase',state.subject,553,540,'墙体 · 标高基准','标高定位','square');return grips;}
+ if(state.view==='3d'){
+  add('space',state.subject,590,250,'墙体 · Z向控制','调整高度','triangle');add('spacemove',state.subject,535,475,'对象 · 空间位置','移动','move');return grips;}
+ if(state.subject==='family'||state.scenario===4||state.env==='family'||state.env==='sketch'&&state.scenario===2){
+  if(state.level==='sub'&&state.scenario===4||state.env==='sketch'){
+   for(let i=0;i<4;i++)add('vert'+i,'family',[[420,278],[729,278],[729,480],[420,480]][i][0],[[420,278],[729,278],[729,480],[420,480]][i][1],`轮廓顶点 ${i+1}`,'编辑轮廓','circle');
+  }else if(state.env==='family'){
+   add('refleft','family',420,380,'参照平面 · 左侧','调整参照');add('refright','family',729,380,'参照平面 · 右侧','调整参照');add('dim','family',730,512,'参数化尺寸 · 实例宽度','调整宽度','triangle');
+  }else{add('dim','family',730,380,'实例宽度 · 参数操纵柄','调整宽度','triangle');add('fmove','family',575,380,'构件实例 · 移动','移动','move')}
+  return grips;
+ }
+ const o=state.objects[state.subject];if(!o)return grips;
+ add('start',o.id,o.x1,o.y1,o.label+' · 起点', '拉伸');
+ add('end',o.id,o.x2,o.y2,o.label+' · 终点','拉伸');
+ add('move',o.id,(o.x1+o.x2)/2,(o.y1+o.y2)/2,o.label+' · 中点','移动','move');
+ if(state.restriction==='pinned'){
+   grips=grips.map(g=>({...g,disabled:true}));add('unpin',o.id,(o.x1+o.x2)/2,(o.y1+o.y2)/2-41,'图钉 · 解除固定','解除固定','pin',{disabled:false});
+ }
+ return grips;
+}
+function candidatePriority(g){if(g.id==='shared')return 0;if(g.oid==='l1')return 1;if(g.oid==='l2')return 2;return 3}
+function renderGrips(){const raw=computeGrips();let vis=raw;
+ if(state.scenario===6){const at=raw.filter(g=>Math.hypot(g.x-raw[0].x,g.y-raw[0].y)<2).sort((a,b)=>candidatePriority(a)-candidatePriority(b));vis=at.length===raw.length?[at[state.candidate%at.length]]:raw}
+ state.activeGripList=raw;
+ vis.forEach(g=>{
+  const warm=state.hover===g.id||(state.scenario===6&&raw.length>1&&g.id===raw[state.candidate%raw.length].id);
+  const hot=state.hot?.grip?.id===g.id;
+  const group=svg('g',{'data-grip':g.id,class:`gripPoint${warm&&!g.disabled?' warm':''}${hot?' hot':''}${g.disabled?' disabled':''}${state.animFlag?' demo':''}`});
+  if(g.shape==='triangle')svg('polygon',{points:`${g.x},${g.y-8} ${g.x+8},${g.y+7} ${g.x-8},${g.y+7}`,class:'gripVis'},group);
+  else if(g.shape==='circle')svg('circle',{cx:g.x,cy:g.y,r:6,class:'gripVis'},group);
+  else if(g.shape==='diamond')svg('polygon',{points:`${g.x},${g.y-9} ${g.x+9},${g.y} ${g.x},${g.y+9} ${g.x-9},${g.y}`,class:'gripVis'},group);
+  else if(g.shape==='pin'){svg('circle',{cx:g.x,cy:g.y,r:9,fill:'#fff',stroke:'#7195b8','stroke-width':1.3},group);svg('path',{d:`M ${g.x-3} ${g.y-5} h 6 l -1.5 4 v 4 l -1.5 3 -1.5 -3 v -4 Z`,fill:'#246fbe','pointer-events':'none'},group)}
+  else{svg('rect',{x:g.x-6,y:g.y-6,width:12,height:12,rx:g.shape==='move'?2:1,class:'gripVis'},group);if(g.shape==='move')svg('path',{d:`M${g.x-3} ${g.y}h6M${g.x} ${g.y-3}v6`,stroke:'#fff','stroke-width':1.4,'pointer-events':'none'},group)}
+  if(g.disabled)svg('line',{x1:g.x-6,y1:g.y+6,x2:g.x+6,y2:g.y-6,class:'gripStrike'},group);
+  svg('circle',{cx:g.x,cy:g.y,r:15,class:'gripHit'},group);
+  svg('circle',{cx:g.x,cy:g.y,r:10,class:'gripPulse'},group);
+ });
+ if(state.scenario===6&&raw.length>1&&raw.every(g=>Math.hypot(g.x-raw[0].x,g.y-raw[0].y)<2)){const g=raw[state.candidate%raw.length];const t=txt(`${state.candidate%raw.length+1}/${raw.length}`,555,336,{'font-size':12,fill:'#236bbb','font-weight':700});svg('rect',{x:543,y:319,width:25,height:6,fill:'transparent'},scene);
+  if(state.hover==='shared'||state.candidate%raw.length===0&&state.relation==='shared'){txt('共享',530,339,{'font-size':10,fill:'#2b75bf'})}
+ }
+}
+function overlayInfo(){const bits=[];const disp={project:'项目环境',sketch:'草图环境',family:'构件编辑',plan:'平面视图',elevation:'立面视图','3d':'三维视图'};
+ bits.push(disp[state.env],disp[state.view]);if(state.selected)bits.push('已选中');else bits.push('未选中');bits.push(state.capability?'已开放编辑能力':'未开放夹点能力');if(state.restriction!=='normal')bits.push({pinned:'对象固定',readonly:'只读',dimension:'尺寸约束'}[state.restriction]);
+ $('canvasInfo').innerHTML=bits.map((x,i)=>`<span class="${i===0?'active':''}">${x}</span>`).join('')
+}
+function drawScene(){scene.innerHTML='';scene.setAttribute('viewBox','0 0 1060 700');
+ if(state.view==='3d')draw3dBackground();else if(state.view==='elevation')drawElevationBackground();else if(state.env==='sketch'&&state.scenario===2)drawSketchBackground();else if(state.subject==='family'||state.scenario===4||state.env==='family')drawFamilyBackground();else drawBackground();
+ if(state.view==='plan'){
+  if(state.scenario===6){drawSimple(state.objects.l1);drawSimple(state.objects.l2);txt('独立端点同位置 / 可选共享关系',565,573,{'font-size':12,fill:'#7c8e9e'});}
+  else if(state.scenario===2||state.scenario===4||state.subject==='family'||state.env==='family'||state.env==='sketch'&&state.scenario===2){
+   if(state.env!=='family'&&state.env!=='sketch'&&state.subject!=='family'){drawFamilyBackground()}
+   txt(state.level==='sub'?'几何子对象':state.env==='family'?'构件定义':state.env==='sketch'?'轮廓编辑':'构件实例',575,585,{'font-size':12,fill:'#64829e'});
+  }else if(state.subject==='symbol')drawSimple(state.objects.symbol);
+  else if(state.subject==='wall' || state.subject==='line')drawSimple(state.objects[state.subject]);
+ }
+ renderGrips();
+ if(state.hot&&state.hot.preview){const h=state.hot,g=h.grip,p=h.preview;
+  if(g.shape==='triangle'||g.shape==='move'||g.shape==='circle'){svg('line',{x1:g.x,y1:g.y,x2:p.x,y2:p.y,class:'previewLine'},scene);svg('circle',{cx:p.x,cy:p.y,r:6,fill:'#fff',stroke:'#3486d9','stroke-width':2},scene)}
+  else{if(state.scenario===6){const base=g.oid==='l1'?state.objects.l1:state.objects.l2;const x1=g.id==='l2start'?p.x:base.x1,y1=g.id==='l2start'?p.y:base.y1,x2=g.id==='l1end'?p.x:base.x2,y2=g.id==='l1end'?p.y:base.y2;svg('line',{x1,y1,x2,y2,class:'previewLine'},scene)}
+  else{const o=state.objects[state.subject],base=o&&o.x1!==undefined?o:null;if(base){svg('line',{x1:g.id==='start'?p.x:base.x1,y1:g.id==='start'?p.y:base.y1,x2:g.id==='end'?p.x:base.x2,y2:g.id==='end'?p.y:base.y2,class:'previewLine'},scene)}}}
+  svg('circle',{cx:p.x,cy:p.y,r:5,fill:'#fff',stroke:'#347de0','stroke-width':2},scene)
+ }
+ overlayInfo();
+}
+function updateSceneResult(){let s=state.scenario;const grips=computeGrips();let msg='';
+ if(s===0)msg=!state.selected?'未选择对象：画布保留模型，但不生成对象夹点。':!state.capability||state.subject==='symbol'?'已选中，但对象不提供夹点能力：不生成夹点。':`已选择${state.subject==='wall'?'墙体':'二维直线'}，具备编辑能力：当前显示 ${grips.length} 个夹点。`;
+ if(s===1)msg=`当前${state.subject==='family'?'参数化构件':state.subject==='wall'?'墙体':'二维直线'}具有 ${grips.length} 个夹点；几何位置与“拉伸／移动／调整尺寸”行为逐一对应。`;
+ if(s===2)msg=`${({project:'项目环境：主要显示实例层开放的操纵柄。',sketch:'草图环境：显示轮廓顶点几何夹点。',family:'构件编辑环境：显示参照位置及尺寸控制件。'})[state.env]} 当前 ${grips.length} 个夹点。`;
+ if(s===3)msg=`${({plan:'平面：显示平面内端点及移动控制。',elevation:'立面：显示可在竖向明确操作的控制件。','3d':'三维：显示对象定义的三维方向操纵柄。'})[state.view]} 当前 ${grips.length} 个夹点。`;
+ if(s===4)msg=`${state.level==='sub'?'几何子对象：提供轮廓顶点控制。':'对象实例：提供实例允许的尺寸操纵柄与移动控制。'} 当前 ${grips.length} 个夹点。`;
+ if(s===5)msg=`${({normal:'正常状态：显示可激活夹点。',pinned:'对象固定：编辑夹点禁用，保留可操作的解固定图钉。',readonly:'只读：编辑夹点仍可显示但不可激活。',dimension:'有尺寸约束：夹点仍正常显示，目标合法性在操作时校验。'})[state.restriction]} 当前显示 ${grips.length} 个控制件。`;
+ if(s===6){const g=grips[state.candidate%Math.max(1,grips.length)];msg=grips.length?`当前候选 ${state.candidate%grips.length+1}/${grips.length}：${g.oid==='shared'?'共享端点（2个对象）':state.objects[g.oid].label}。${state.relation==='independent'?'端点坐标相同，不自动联动。':'共同编辑关系已建立，共享夹点与具有独立意义的夹点都可访问。'}`:'当前没有候选夹点';}
+ if(s===7)msg=`${({plan:'平面视图',elevation:'立面视图','3d':'三维视图'})[state.view]}下重新生成夹点集合；视图或环境变化前未确认的热夹点操作应取消。`;
+ result(msg);$('canvasBottomTip').textContent=state.hot?'热夹点已激活：移动鼠标指定目标，再次单击确认；Esc 取消':s===6?'把鼠标移到重合端点，按 Tab 循环候选；单击当前候选可进入热态':s===0?'单击对象选中；未选中对象不会生成夹点':'将鼠标悬停在夹点查看名称与行为；单击可激活几何编辑';
+}
+function renderAll(){drawScene();updateSceneResult()}
+function selectObject(id){if(state.scenario===6)return;state.subject=id;state.selected=true;state.hover=null;state.candidate=0;state.hot=null;renderLesson();renderAll();notify('已选择对象：重新确定当前夹点集合')}
+function tooltip(e,text){const v=$('hoverTip'),r=vp.getBoundingClientRect();v.textContent=text;v.classList.add('show');v.style.left=Math.min(vp.clientWidth-270,Math.max(10,e.clientX-r.left+18))+'px';v.style.top=Math.min(vp.clientHeight-38,Math.max(75,e.clientY-r.top-39))+'px'}
+function hideTooltip(){$('hoverTip').classList.remove('show')}
+function startHot(grip){if(grip.disabled){notify('当前夹点不可操作：请查看固定或权限状态');return}
+ if(grip.id==='unpin'){state.restriction='normal';state.hot=null;renderLesson();renderAll();notify('已解除固定：几何编辑夹点恢复可用');return}
+ state.hot={grip,preview:null};state.hover=null;hideTooltip();renderAll();status('热夹点已激活 · 单击指定目标');notify('已进入热态：松开鼠标，移动定位，再次单击确认')}
+function updateHot(p){if(!state.hot)return;const h=state.hot;let point=constrain(p);if(['elevheight','space'].includes(h.grip.id))point.x=h.grip.x;
+ if(h.grip.id==='dim')point.y=h.grip.y;
+ if(state.restriction==='dimension'){}h.preview=point;renderAll();}
+function commitHot(){const h=state.hot;if(!h)return;if(!h.preview){notify('请先移动鼠标指定新的目标位置');return}
+ const p=h.preview,g=h.grip;let invalid=false;
+ if(state.restriction==='dimension'){invalid=Math.hypot(p.x-g.x,p.y-g.y)>75}
+ if(invalid){result('尺寸约束不允许该目标：保持热态，可重新指定一个较近的目标，或按 Esc 取消。');notify('目标违反尺寸约束：未提交，仍处于热态');return}
+ state.history.push(deep(state.objects));state.future=[];
+ if(state.view==='plan'&&g.id==='start' || state.view==='plan'&&g.id==='end'){
+   const o=state.objects[state.subject];if(o&&o.x1!==undefined){if(g.id==='start'){o.x1=p.x;o.y1=p.y}else{o.x2=p.x;o.y2=p.y}}
+ }else if(state.scenario===6){if(g.id==='l1end'||g.id==='shared'){state.objects.l1.x2=p.x;state.objects.l1.y2=p.y}if(g.id==='l2start'||g.id==='shared'){state.objects.l2.x1=p.x;state.objects.l2.y1=p.y}}
+ else if(g.id==='move'&&state.objects[state.subject]?.x1!==undefined){const o=state.objects[state.subject],dx=p.x-g.x,dy=p.y-g.y;o.x1+=dx;o.y1+=dy;o.x2+=dx;o.y2+=dy}
+ state.hot=null;state.hover=null;renderAll();result('目标已通过校验并提交。夹点显示位置已依据对象的新状态刷新；Ctrl+Z 可以撤销。');notify('操作已提交：刷新夹点集合');status('热夹点编辑已完成')
+}
+function cancelHot(reason='已按 Esc 取消：未确认修改不影响对象'){if(!state.hot)return;state.hot=null;state.hover=null;renderAll();notify(reason);status('夹点编辑已取消')}
+function hotspotAt(e){const p=pos(e);let grips=computeGrips();let hits=grips.filter(g=>Math.hypot(g.x-p.x,g.y-p.y)<18);if(!hits.length)return null;
+ if(state.scenario===6){hits=hits.sort((a,b)=>candidatePriority(a)-candidatePriority(b));return hits.length>1?hits[state.candidate%hits.length]:hits[0]}
+ return hits.sort((a,b)=>{if(a.id==='unpin')return -1;if(b.id==='unpin')return 1;return Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)})[0]}
+function hoveredObject(e){const p=pos(e);if(state.scenario===6)return null;if(state.subject==='family'||state.scenario===4||state.env==='family'||state.env==='sketch'&&state.scenario===2)return p.x>=407&&p.x<=745&&p.y>=270&&p.y<=494?'family':null;if(state.subject==='symbol')return p.x>=400&&p.x<=610&&p.y>=285&&p.y<=466?'symbol':null;const ob=state.objects[state.subject];if(!ob?.x1)return null;let ax=ob.x1,ay=ob.y1,bx=ob.x2,by=ob.y2;const t=Math.max(0,Math.min(1,((p.x-ax)*(bx-ax)+(p.y-ay)*(by-ay))/((bx-ax)**2+(by-ay)**2)));return Math.hypot(p.x-(ax+t*(bx-ax)),p.y-(ay+t*(by-ay)))<20?state.subject:null}
+let pointerLast=null;
+scene.addEventListener('mousemove',e=>{const p=pos(e);pointerLast=p;$('cursorCoords').textContent=`X: ${Math.round(p.x*10)}　Y: ${Math.round(p.y*10)}`;
+ if(state.hot){updateHot(p);return}
+ const grip=hotspotAt(e);const newhover=grip?.id||null;
+ if(newhover!==state.hover){state.hover=newhover;renderAll()}
+ if(grip){tooltip(e,`${grip.oid==='shared'?'共享夹点':state.objects[grip.oid]?.label||'几何控制'} · ${grip.label} · ${grip.disabled?'不可编辑':grip.behavior}`);if(state.scenario===6){updateSceneResult()}}else hideTooltip();
+});
+scene.addEventListener('mouseleave',()=>{if(state.hot)return;state.hover=null;hideTooltip();renderAll()});
+scene.addEventListener('click',e=>{if(state.hot){commitHot();return}
+ const grip=hotspotAt(e);if(grip){startHot(grip);return}
+ const o=hoveredObject(e);if(o){selectObject(o);return}
+ if(state.scenario===0){state.selected=false;state.hover=null;renderLesson();renderAll();notify('空白位置取消选择：夹点随之消失')}
+});
+// All keyboard actions are confined to the demo context; form controls keep native shortcuts.
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+ if(e.key==='Escape'){if(state.hot){e.preventDefault();cancelHot()}else{state.hover=null;renderAll();hideTooltip()}return}
+ if(e.key==='Tab'&&state.scenario===6&&!state.hot&&state.selected){e.preventDefault();const gs=computeGrips();if(gs.length>1){state.candidate=(state.candidate+1)%gs.length;state.hover=null;renderAll();notify(`候选 ${state.candidate+1}/${gs.length}：${gs[state.candidate].oid==='shared'?'共享端点':state.objects[gs[state.candidate].oid].label}`)}return}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
+ if(e.key==='Enter'&&state.hot){e.preventDefault();commitHot()}
+});
+function undo(){if(state.hot){cancelHot();return}if(state.history.length){state.future.push(deep(state.objects));state.objects=state.history.pop();renderAll();notify('已撤销修改，夹点重新计算')}else notify('当前没有可撤销的修改')}
+function redo(){if(state.future.length){state.history.push(deep(state.objects));state.objects=state.future.pop();renderAll();notify('已重做修改')}else notify('当前没有可重做的修改')}
+let timeouts=[];const wait=t=>new Promise(r=>{const id=setTimeout(r,t);timeouts.push(id)});
+async function demo(){const token=++state.seq;const btn=$('demoPlay');btn.disabled=true;state.animFlag=true;renderAll();
+ function act(fn,ms=730){if(token!==state.seq)return false;fn();renderLesson();renderAll();return true}
+ try{
+ if(state.scenario===0){if(!act(()=>{state.selected=false}))return;notify('① 未选择时无夹点');await wait(780);if(!act(()=>{state.selected=true;state.capability=true}))return;notify('② 选中有能力对象，显示夹点');await wait(850);if(!act(()=>{state.capability=false}))return;notify('③ 关闭编辑能力，夹点消失');await wait(950);if(!act(()=>{state.capability=true}))return;}
+ if(state.scenario===1){for(const key of ['line','wall','family']){if(!act(()=>{state.subject=key;state.selected=true}))return;notify(`当前对象：${key==='line'?'二维直线':key==='wall'?'基本墙':'参数化构件'}`);await wait(1050)}}
+ if(state.scenario===2){for(const key of ['project','sketch','family']){if(!act(()=>{state.env=key}))return;notify(`当前环境：${key==='project'?'项目':key==='sketch'?'草图':'构件编辑'}`);await wait(1050)}}
+ if(state.scenario===3){for(const key of ['plan','elevation','3d']){if(!act(()=>{state.view=key}))return;notify(`当前视图：${key==='plan'?'平面':key==='elevation'?'立面':'三维'}`);await wait(1100)}}
+ if(state.scenario===4){for(const key of ['object','sub','object']){if(!act(()=>{state.level=key}))return;notify(key==='object'?'对象级：实例尺寸和位置控制':'子对象级：轮廓顶点控制');await wait(1000)}}
+ if(state.scenario===5){for(const key of ['normal','pinned','readonly','dimension']){if(!act(()=>{state.restriction=key}))return;notify({'normal':'可编辑夹点','pinned':'已固定：禁用夹点与图钉','readonly':'只读：禁用夹点','dimension':'尺寸约束：夹点仍存在'}[key]);await wait(1150)}}
+ if(state.scenario===6){if(!act(()=>{state.relation='independent';state.candidate=0}))return;notify('① 两条直线坐标重合，不自动合并');await wait(900);if(!act(()=>{state.candidate=1}))return;notify('② Tab选择另一个独立夹点');await wait(950);if(!act(()=>{state.relation='shared';state.candidate=0}))return;notify('③ 建立共同编辑关系，出现共享夹点');await wait(1250)}
+ if(state.scenario===7){if(!act(()=>{state.view='plan';state.selected=true}))return;let g=computeGrips().find(x=>x.id==='end');if(g)state.hot={grip:g,preview:{x:840,y:405}};renderAll();notify('① 当前热夹点处于编辑预览');await wait(1350);if(!act(()=>{state.hot=null;state.view='elevation'}))return;notify('② 切换视图，未确认编辑取消，夹点重新计算');await wait(1200)}
+ result(updateResultMessage());
+ }finally{if(token===state.seq){state.animFlag=false;renderLesson();renderAll();btn.disabled=false}}
+}
+function updateResultMessage(){if(state.scenario===7)return '切换视图后，未确认的热夹点操作取消；新视图只显示当前允许的高度和标高控制。';return $('resultText').textContent}
+// UI wiring
+$('scenarioNav').addEventListener('click',e=>{const b=e.target.closest('[data-scenario]');if(b)resetFor(Number(b.dataset.scenario))});
+$('lessonControls').addEventListener('change',e=>{const k=e.target.dataset.ctrl;if(!k)return;setControl(k,e.target.type==='checkbox'?e.target.checked:e.target.value)});
+$('prevScene').onclick=()=>resetFor((state.scenario+7)%8);$('nextScene').onclick=()=>resetFor((state.scenario+1)%8);$('demoReset').onclick=()=>resetFor(state.scenario);$('demoPlay').onclick=demo;
+$('topUndo').onclick=undo;$('topRedo').onclick=redo;$('topSave').onclick=()=>notify('演示文件：不写入真实 Vela 项目');$('shareBtn').onclick=()=>notify('这是独立本地 HTML 原型，协作未连接');
+$('chooseSelect').onclick=()=>notify('选择模式：单击图元；单击夹点并松开后指定目标');$('selectTool').onclick=$('chooseSelect').onclick;
+$('viewPlanTool').onclick=()=>setControl('view','plan');$('view3dTool').onclick=()=>setControl('view','3d');
+$('zoomIn').onclick=()=>notify('本节固定绘图视野，便于比较相同几何位置的夹点');$('zoomOut').onclick=$('zoomIn').onclick;$('zoomFit').onclick=()=>notify('已适应当前演示场景');$('fitTool').onclick=$('zoomFit').onclick;
+$('gridVisual').onclick=()=>{state.grid=!state.grid;vp.classList.toggle('noGrid',!state.grid);$('gridVisual').classList.toggle('active',state.grid)};
+$('toggleGridRibbon').onclick=$('gridVisual').onclick;
+$('statusGrid').onclick=$('gridVisual').onclick;
+$('statusSnap').onclick=()=>{state.snap=!state.snap;$('statusSnap').classList.toggle('active',state.snap);notify(state.snap?'对象捕捉已开启':'对象捕捉已关闭')};
+$('moveTool').onclick=()=>{if(!state.selected){notify('请先选择对象');return}const grip=computeGrips().find(x=>x.id==='move');if(grip)startHot(grip);else notify('当前对象未开放整体移动夹点')};
+$('deleteTool').onclick=()=>notify('本节只演示夹点显示，不执行删除对象操作');
+$('lineTool').onclick=()=>{state.scenario!==6?resetFor(1):null;state.subject='line';renderLesson();renderAll();notify('已加载二维直线：可查看端点与中点夹点')};
+$('wallTool').onclick=()=>{resetFor(0);state.subject='wall';state.selected=true;renderLesson();renderAll();notify('已加载基本墙：单击夹点查看热态操作')};
+$('gridTool').onclick=()=>notify('轴网专属控制将在视图级夹点章节展开');
+$('viewTabs').addEventListener('click',e=>{const v=e.target.closest('[data-view]')?.dataset.view;if(v)setControl('view',v==='floor1'?'plan':v==='floor2'?'elevation':'3d')});
+$('projectTree').addEventListener('click',e=>{const v=e.target.closest('[data-view]')?.dataset.view;if(v)setControl('view',v==='floor1'?'plan':v==='floor2'?'elevation':'3d');const c=e.target.closest('[data-category]')?.dataset.category;if(c)notify(c==='lines'?'可在第02、第07场景观察二维对象夹点':c==='walls'?'可在第01、第06场景观察墙体夹点':'轴网视图控制在后续机制章节演示')});
+$('treeSearch').addEventListener('input',e=>{let q=e.target.value.trim().toLowerCase();document.querySelectorAll('.treeLeaf').forEach(x=>x.style.display=!q||x.textContent.toLowerCase().includes(q)?'':'none')});
+$('helpTool').onclick=()=>{notify('右侧选择8个规则场景，点击“演示此规则”，或手动调整条件；Esc可取消热态。')};
+$('menuTabs').addEventListener('click',e=>{const b=e.target.closest('.menuTab');if(!b)return;document.querySelectorAll('.menuTab').forEach(x=>x.classList.toggle('active',x===b));notify('已切换到 '+b.dataset.menu+' 功能区（演示仍处于4.1.2）')});
+document.querySelectorAll('.rail button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rail button').forEach(n=>n.classList.toggle('active',n===b));notify('机制演示面板持续显示，便于对比夹点规则')}));
+resetFor(0);
+})();
+
+</script>
+</body>
+</html>
